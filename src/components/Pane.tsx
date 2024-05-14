@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import { useSearchParams } from "react-router-dom";
 
 async function fetchPage(title: string) {
   const url = `https://en.wikipedia.org/api/rest_v1/page/html/${title}`;
+  console.log("fetching", url);
   try {
     const response = await fetch(url);
     if (!response.ok) {
@@ -28,6 +30,9 @@ export function Pane({
   const { data, error, isPending, isError } = useQuery({
     queryKey: ["page", title],
     queryFn: () => fetchPage(title),
+    retry: 0,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   useEffect(() => {
@@ -37,6 +42,11 @@ export function Pane({
 
     // add event listener to all links in htmlPage
     htmlPage.current?.querySelectorAll("a").forEach((link) => {
+      if (link.getAttribute("rel") !== "mw:WikiLink") {
+        // console.log("link isn't a wiki link", link.getAttribute("rel"));
+        return;
+      }
+
       if (
         searchParams.getAll("wikiPage").includes(link.getAttribute("title"))
       ) {
@@ -44,6 +54,16 @@ export function Pane({
       } else {
         link.classList.remove("bg-blue-200");
       }
+
+      // don't add an event listener multiple times
+      if (link.getAttribute("data-event-listener")) {
+        // console.log("event listener already added");
+        return;
+      }
+
+      // add attribute to prevent adding event listener multiple times
+      link.setAttribute("data-event-listener", "true");
+      // console.log("event listener added");
 
       link.addEventListener("click", (e) => {
         if (link.querySelector("img")) {
@@ -74,10 +94,15 @@ export function Pane({
         }
       });
     });
-  }, [htmlPage, data, setSearchParams, index, searchParams]);
+  }, [data, index, searchParams, setSearchParams]);
 
   if (isPending) {
-    return null;
+    return (
+      <div
+        className="h-screen p-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[600px] w-[600px]"
+        style={{ scrollbarWidth: "thin" }}
+      ></div>
+    );
   }
 
   if (isError) {
