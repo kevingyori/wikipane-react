@@ -17,23 +17,21 @@ async function fetchPage(title: string) {
   }
 }
 
-export function Pane({
-  title = "Alan_Turing",
-  index,
-}: {
-  title?: string;
-  index: number;
-}) {
+export function Pane({ title, index }: { title: string; index: number }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const htmlPage = useRef<HTMLDivElement>(null);
   const [pageTitle, setPageTitle] = useState("");
   const { data, error, isPending, isError } = useQuery({
     queryKey: ["page", title],
     queryFn: () => fetchPage(title),
+    enabled: title !== "search",
     retry: 0,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   });
+  const [pageState, setPageState] = useState<"bottom" | "middle" | "top">(
+    "top",
+  );
 
   useEffect(() => {
     // delete base url html tag from htmlPage
@@ -111,19 +109,27 @@ export function Pane({
 
   if (data) {
     return (
-      <div
-        className="h-screen p-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[600px] w-[600px]"
-        style={{ scrollbarWidth: "thin" }}
-      >
+      <div className="flex bg-white scrollbar-thin">
         <div
-          className="text-2xl font-bold"
-          dangerouslySetInnerHTML={{ __html: pageTitle }}
-        ></div>
-        <div
-          ref={htmlPage}
-          className="overflow-hidden"
-          dangerouslySetInnerHTML={{ __html: data }}
-        />
+          className="w-10 min-w-10 sticky cursor-vertical-text text-gray-700"
+          style={{ zIndex: index, right: index * 40 }}
+        >
+          <p
+            className="font-medium text-lg rotate-90 pb-1.5 w-48 origin-bottom-left"
+            dangerouslySetInnerHTML={{ __html: pageTitle }}
+          ></p>
+        </div>
+        <div className="h-[calc(100vh-20px)] py-3 pr-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[650px] w-[650px] scrollbar-thin">
+          <div
+            className="text-2xl font-bold"
+            dangerouslySetInnerHTML={{ __html: pageTitle }}
+          ></div>
+          <div
+            ref={htmlPage}
+            className="overflow-hidden"
+            dangerouslySetInnerHTML={{ __html: data }}
+          />
+        </div>
       </div>
     );
   }
