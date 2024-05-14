@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@uidotdev/usehooks";
-import { ChangeEventHandler, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { Command } from "cmdk";
+import "../cmdk.scss";
 
 function fetchSearchResults(query: string) {
   const url = `https://en.wikipedia.org/w/api.php?origin=*&action=opensearch&format=json&search=${query}&namespace=0&limit=10&formatversion=2`;
@@ -20,43 +22,84 @@ function useSearchQuery(searchQuery: string, debounce = 500) {
   });
 }
 
-export function Search() {
+export function Search({
+  open,
+  setOpen,
+  containerRef,
+}: {
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  containerRef: HTMLElement;
+}) {
   const [query, setQuery] = useState("");
   const [, setSearchParams] = useSearchParams();
   const { data, isPending, isError } = useSearchQuery(query, 200);
-  const handleSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
-    setQuery(e.currentTarget.value);
-  };
+  const [title, setTitle] = useState("");
+
+  function handleNavigateToPage(title: string) {
+    setSearchParams((prev) => {
+      prev.append("wikiPage", title);
+      return prev;
+    });
+  }
+
+  // Toggle the menu when ⌘K is pressed
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen((open: boolean) => !open);
+      }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        console.log("enter", query);
+        handleNavigateToPage(title);
+      }
+    };
+
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, [query, title, handleNavigateToPage, setOpen]);
 
   return (
-    <div>
-      <input
-        type="text"
-        name="Search"
-        placeholder="Search"
+    <Command.Dialog
+      value={title}
+      onValueChange={setTitle}
+      open={open}
+      label="Search Wikipedia"
+      onOpenChange={setOpen}
+      className="linear shadow w-3/6 opacity-100 fixed top-[25%] left-[25%] -translate-y-1/2 translate-x--1/2 z-50 bg-white border border-gray-200 rounded-md overflow-hidden"
+      // container={containerRef}
+    >
+      {/* <Command.Dialog open={open} onOpenChange={setOpen}> */}
+      <Command.Input
+        placeholder="Search Wikpedia"
+        onValueChange={setQuery}
         value={query}
-        onChange={handleSearch}
       />
-      <label htmlFor="search">Search</label>
-      <ul>
+
+      <Command.List>
+        {isPending && <Command.Loading>Hang on…</Command.Loading>}
+
+        <Command.Empty>No results found.</Command.Empty>
+        <Command.Separator />
+
         {!isPending && !isError && data[1]
           ? data[1].map((result: string, i: number) => (
-              <li key={result}>
-                <a
-                  className="text-blue-500 hover:underline hover:cursor-pointer"
-                  onClick={() => {
-                    const title = data[3][i].substring(
-                      data[3][i].lastIndexOf("/") + 1,
-                    );
-                    setSearchParams({ wikiPage: title });
-                  }}
-                >
-                  {result}
-                </a>
-              </li>
+              <Command.Item
+                key={result}
+                onClick={() => {
+                  const title = data[3][i].substring(
+                    data[3][i].lastIndexOf("/") + 1,
+                  );
+                  handleNavigateToPage(title);
+                }}
+              >
+                {result}
+              </Command.Item>
             ))
           : null}
-      </ul>
-    </div>
+      </Command.List>
+    </Command.Dialog>
   );
 }

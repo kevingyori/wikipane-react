@@ -98,7 +98,7 @@ export function Pane({ title, index }: { title: string; index: number }) {
   if (isPending) {
     return (
       <div
-        className="h-screen p-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[600px] w-[600px]"
+        className="h-screen p-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[600px] w-[600px] bg-white"
         style={{ scrollbarWidth: "thin" }}
       ></div>
     );
@@ -116,7 +116,7 @@ export function Pane({ title, index }: { title: string; index: number }) {
           style={{ zIndex: index, right: index * 40 }}
         >
           <p
-            className="font-medium text-lg rotate-90 pb-1.5 w-48 origin-bottom-left"
+            className="font-medium text-lg rotate-90 pb-1.5 w-screen origin-bottom-left"
             dangerouslySetInnerHTML={{ __html: pageTitle }}
           ></p>
         </div>
