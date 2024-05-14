@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { ErrorBoundary } from "react-error-boundary";
 import { useSearchParams } from "react-router-dom";
 
 async function fetchPage(title: string) {
@@ -21,7 +20,7 @@ export function Pane({ title, index }: { title: string; index: number }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const htmlPage = useRef<HTMLDivElement>(null);
   const [pageTitle, setPageTitle] = useState("");
-  const { data, error, isPending, isError } = useQuery({
+  const { data, isPending, isError } = useQuery({
     queryKey: ["page", title],
     queryFn: () => fetchPage(title),
     enabled: title !== "search",
@@ -29,9 +28,9 @@ export function Pane({ title, index }: { title: string; index: number }) {
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   });
-  const [pageState, setPageState] = useState<"bottom" | "middle" | "top">(
-    "top",
-  );
+  // const [pageState, setPageState] = useState<"bottom" | "middle" | "top">(
+  //   "top",
+  // );
 
   useEffect(() => {
     // delete base url html tag from htmlPage
@@ -46,7 +45,9 @@ export function Pane({ title, index }: { title: string; index: number }) {
       }
 
       if (
-        searchParams.getAll("wikiPage").includes(link.getAttribute("title"))
+        searchParams
+          .getAll("wikiPage")
+          .includes(link.getAttribute("title") as string)
       ) {
         link.classList.add("bg-blue-200");
       } else {
