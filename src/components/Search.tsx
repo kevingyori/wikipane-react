@@ -25,11 +25,9 @@ function useSearchQuery(searchQuery: string, debounce = 500) {
 export function Search({
   open,
   setOpen,
-  containerRef,
 }: {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  containerRef: HTMLElement;
 }) {
   const [query, setQuery] = useState("");
   const [, setSearchParams] = useSearchParams();
@@ -69,7 +67,6 @@ export function Search({
       label="Search Wikipedia"
       onOpenChange={setOpen}
       className="linear shadow w-3/6 opacity-100 fixed top-[25%] left-[25%] -translate-y-1/2 translate-x--1/2 z-50 bg-white border border-gray-200 rounded-md overflow-hidden"
-      // container={containerRef}
     >
       {/* <Command.Dialog open={open} onOpenChange={setOpen}> */}
       <Command.Input

@@ -1,12 +1,11 @@
 import { useSearchParams } from "react-router-dom";
 import { Pane } from "./Pane";
 import { Search } from "./Search";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 export function Panes() {
   const [searchParams] = useSearchParams();
   const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (searchParams.getAll("wikiPage").length === 0) {
@@ -16,16 +15,8 @@ export function Panes() {
 
   return (
     <>
-      <div
-        className="flex flex-row overflow-x-scroll overflow-y-hidden scrollbar-thin h-screen w-screen"
-        ref={containerRef}
-      >
-        <Search
-          open={open}
-          setOpen={setOpen}
-          // className="z-50 fixed top-0"
-          // containerRef={containerRef.current}
-        />
+      <div className="flex flex-row overflow-x-scroll overflow-y-hidden scrollbar-thin h-screen w-screen">
+        <Search open={open} setOpen={setOpen} />
         {searchParams.getAll("wikiPage").map((title, key) => (
           <div
             key={key}
