@@ -66,7 +66,7 @@ export function Pane({
             });
           }
           e.preventDefault();
-          // console.log(link, title, "wikipage", index);
+
           setSearchParams((prev) => {
             prev.append("wikiPage", title);
             return prev;
@@ -90,7 +90,10 @@ export function Pane({
         className="h-screen p-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[600px] w-[600px]"
         style={{ scrollbarWidth: "thin" }}
       >
-        <div className="text-2xl font-bold">{pageTitle}</div>
+        <div
+          className="text-2xl font-bold"
+          dangerouslySetInnerHTML={{ __html: pageTitle }}
+        ></div>
         <div
           ref={htmlPage}
           className="overflow-hidden"
