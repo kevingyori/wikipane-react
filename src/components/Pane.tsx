@@ -16,33 +16,40 @@ async function fetchPage(title: string) {
   }
 }
 
+function WikiPage({
+  pageRef,
+  data,
+}: {
+  pageRef: React.MutableRefObject<HTMLDivElement | null>;
+  data: string;
+}) {
+  return (
+    <div
+      ref={pageRef}
+      className="overflow-hidden"
+      dangerouslySetInnerHTML={{ __html: data }}
+    />
+  );
+}
+
+function WikiTitle({ title }: { title: string }) {
+  return (
+    <p
+      className="font-medium text-lg rotate-90 pb-1.5 w-screen origin-bottom-left"
+      dangerouslySetInnerHTML={{ __html: title }}
+    />
+  );
+}
+
 export function Pane({ title, index }: { title: string; index: number }) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const htmlPage = useRef<HTMLDivElement>(null);
+  const pageRef = useRef<HTMLDivElement>(null);
   const [pageTitle, setPageTitle] = useState("");
 
   const queryKey = useMemo(() => ["page", title], [title]);
   const fetchPageMemoized = useCallback(() => fetchPage(title), [title]);
-
-  const { data, isPending, isError } = useQuery({
-    queryKey: queryKey,
-    queryFn: fetchPageMemoized,
-    enabled: title !== "search",
-    retry: 0,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-  });
-  // const [pageState, setPageState] = useState<"bottom" | "middle" | "top">(
-  //   "top",
-  // );
-
-  useEffect(() => {
-    // delete base url html tag from htmlPage
-    htmlPage.current?.querySelector("base")?.remove();
-    setPageTitle(htmlPage.current?.querySelector("title")?.textContent || "");
-
-    // add event listener to all links in htmlPage
-    htmlPage.current?.querySelectorAll("a").forEach((link) => {
+  const addEventListeners = useCallback(() => {
+    pageRef.current?.querySelectorAll("a").forEach((link) => {
       if (link.getAttribute("rel") !== "mw:WikiLink") {
         // console.log("link isn't a wiki link", link.getAttribute("rel"));
         return;
@@ -97,16 +104,36 @@ export function Pane({ title, index }: { title: string; index: number }) {
         }
       });
     });
-  }, [data, index, searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, index]);
 
-  if (isPending) {
-    return (
-      <div
-        className="h-screen p-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[650px] w-[650px] bg-white sticky"
-        style={{ zIndex: index, right: index * 40, scrollbarWidth: "thin" }}
-      ></div>
-    );
-  }
+  const { data, isPending, isError } = useQuery({
+    queryKey: queryKey,
+    queryFn: fetchPageMemoized,
+    enabled: title !== "search",
+    retry: 0,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
+  // const [pageState, setPageState] = useState<"bottom" | "middle" | "top">(
+  //   "top",
+  // );
+
+  useEffect(() => {
+    // delete base url html tag from htmlPage
+    pageRef.current?.querySelector("base")?.remove();
+    setPageTitle(pageRef.current?.querySelector("title")?.textContent || "");
+
+    addEventListeners();
+  }, [addEventListeners, data]);
+
+  // if (isPending) {
+  //   return (
+  //     <div
+  //       className="h-screen p-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[650px] w-[650px] bg-white sticky"
+  //       style={{ zIndex: index, right: index * 40, scrollbarWidth: "thin" }}
+  //     ></div>
+  //   );
+  // }
 
   if (isError) {
     return null;
@@ -119,21 +146,14 @@ export function Pane({ title, index }: { title: string; index: number }) {
           className="w-10 min-w-10 sticky cursor-vertical-text text-gray-700"
           style={{ zIndex: index, right: index * 40 }}
         >
-          <p
-            className="font-medium text-lg rotate-90 pb-1.5 w-screen origin-bottom-left"
-            dangerouslySetInnerHTML={{ __html: pageTitle }}
-          ></p>
+          {!isPending ? <WikiTitle title={pageTitle} /> : " "}
         </div>
         <div className="h-[calc(100vh-20px)] py-3 pr-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[650px] w-[650px] scrollbar-thin">
           <div
             className="text-2xl font-bold"
             dangerouslySetInnerHTML={{ __html: pageTitle }}
           ></div>
-          <div
-            ref={htmlPage}
-            className="overflow-hidden"
-            dangerouslySetInnerHTML={{ __html: data }}
-          />
+          {!isPending ? <WikiPage pageRef={pageRef} data={data} /> : "pending"}
         </div>
       </div>
     );

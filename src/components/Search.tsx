@@ -1,24 +1,30 @@
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@uidotdev/usehooks";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Command } from "cmdk";
 import "../cmdk.scss";
 
 function fetchSearchResults(query: string) {
-  const url = `https://en.wikipedia.org/w/api.php?origin=*&action=opensearch&format=json&search=${query}&namespace=0&limit=5&formatversion=2`;
   if (query.length < 3) return { data: [], isPending: false, isError: false };
+  const url = `https://en.wikipedia.org/w/api.php?origin=*&action=opensearch&format=json&search=${encodeURIComponent(query)}&namespace=0&limit=6&formatversion=2`;
   return fetch(url).then((res) => res.json());
 }
 
-function useSearchQuery(searchQuery: string, debounce = 500) {
-  const debouncedSearchQuery = useDebounce(searchQuery, debounce);
+function useSearchQuery(searchQuery: string) {
+  const debouncedSearchQuery = useDebounce(searchQuery, 200);
+  const queryKey = useMemo(
+    () => ["search", debouncedSearchQuery],
+    [debouncedSearchQuery],
+  );
+
   return useQuery({
-    queryKey: ["search", debouncedSearchQuery],
+    queryKey: queryKey,
     queryFn: () => fetchSearchResults(debouncedSearchQuery),
     retry: 0,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
+    enabled: debouncedSearchQuery.length >= 3,
   });
 }
 
@@ -31,33 +37,58 @@ export function Search({
 }) {
   const [query, setQuery] = useState("");
   const [, setSearchParams] = useSearchParams();
-  const { data, isPending, isError } = useSearchQuery(query, 200);
+  const { data, isPending, isError } = useSearchQuery(query);
   const [title, setTitle] = useState("");
 
-  function handleNavigateToPage(title: string) {
-    setSearchParams((prev) => {
-      prev.append("wikiPage", title);
-      return prev;
-    });
-  }
+  const handleNavigateToPage = useCallback(
+    (title: string) => {
+      setSearchParams((prev) => {
+        prev.append("wikiPage", title);
+        return prev;
+      });
+    },
+    [setSearchParams],
+  );
 
-  // Toggle the menu when ⌘K is pressed
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open: boolean) => !open);
+        setOpen((open) => !open);
       }
       if (e.key === "Enter") {
         e.preventDefault();
-        console.log("enter", query);
+        setOpen(false);
         handleNavigateToPage(title);
       }
-    };
+    },
+    [title, handleNavigateToPage, setOpen],
+  );
 
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
-  }, [query, title, handleNavigateToPage, setOpen]);
+  const searchResults = useMemo(() => {
+    return !isPending && !isError && data[1]
+      ? data[1].map((result: string, i: number) => (
+          <>
+            <Command.Item
+              key={result}
+              onClick={() => {
+                const title = data[3][i].substring(
+                  data[3][i].lastIndexOf("/") + 1,
+                );
+                handleNavigateToPage(title);
+              }}
+            >
+              {result}
+            </Command.Item>
+          </>
+        ))
+      : null;
+  }, [data, isPending, isError, handleNavigateToPage]);
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
 
   return (
     <Command.Dialog
@@ -76,27 +107,10 @@ export function Search({
       />
 
       <Command.List>
-        {isPending && <Command.Loading>Hang on…</Command.Loading>}
-
+        {/* {isPending && <Command.Loading>Hang on…</Command.Loading>} */}
         <Command.Empty>No results found.</Command.Empty>
         <Command.Separator />
-
-        {!isPending && !isError && data[1]
-          ? data[1].map((result: string, i: number) => (
-              <Command.Item
-                key={result}
-                value={data[3][i].substring(data[3][i].lastIndexOf("/") + 1)}
-                onClick={() => {
-                  const title = data[3][i].substring(
-                    data[3][i].lastIndexOf("/") + 1,
-                  );
-                  handleNavigateToPage(title);
-                }}
-              >
-                {result}
-              </Command.Item>
-            ))
-          : null}
+        {searchResults}
       </Command.List>
     </Command.Dialog>
   );
