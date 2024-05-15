@@ -1,6 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@uidotdev/usehooks";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useSearchParams } from "react-router-dom";
 import { Command } from "cmdk";
 import "../cmdk.scss";
@@ -28,17 +34,19 @@ function useSearchQuery(searchQuery: string) {
   });
 }
 
-export function Search({
-  open,
-  setOpen,
-}: {
-  open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-}) {
+export function Search() {
   const [query, setQuery] = useState("");
   const [, setSearchParams] = useSearchParams();
   const { data, isPending, isError } = useSearchQuery(query);
   const [title, setTitle] = useState("");
+  const [searchParams] = useSearchParams();
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.getAll("wikiPage").length === 0) {
+      setOpen(true);
+    }
+  }, [searchParams]);
 
   const handleNavigateToPage = useCallback(
     (title: string) => {
@@ -59,6 +67,7 @@ export function Search({
       if (e.key === "Enter") {
         e.preventDefault();
         setOpen(false);
+        setQuery("");
         handleNavigateToPage(title);
       }
     },
@@ -85,7 +94,7 @@ export function Search({
       : null;
   }, [data, isPending, isError, handleNavigateToPage]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);

@@ -1,11 +1,10 @@
 import { useSearchParams } from "react-router-dom";
 import { Pane } from "./Pane";
 import { Search } from "./Search";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 
-export function Panes() {
+function WikiPanes() {
   const [searchParams] = useSearchParams();
-  const [open, setOpen] = useState(false);
   const memoizedSearchParams = useMemo(
     () => searchParams.getAll("wikiPage"),
     [searchParams],
@@ -27,18 +26,15 @@ export function Panes() {
       )),
     [memoizedSearchParams],
   );
+  return <>{memoizedPanes}</>;
+}
 
-  useEffect(() => {
-    if (searchParams.getAll("wikiPage").length === 0) {
-      setOpen(true);
-    }
-  }, [searchParams]);
-
+export function Panes() {
   return (
     <>
       <div className="flex flex-row overflow-x-scroll overflow-y-hidden scrollbar-thin h-screen w-screen">
-        <Search open={open} setOpen={setOpen} />
-        {memoizedPanes}
+        <WikiPanes />
+        <Search />
       </div>
     </>
   );

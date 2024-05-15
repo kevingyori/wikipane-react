@@ -113,6 +113,7 @@ export function Pane({ title, index }: { title: string; index: number }) {
     retry: 0,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
+    _optimisticResults: "optimistic",
   });
   // const [pageState, setPageState] = useState<"bottom" | "middle" | "top">(
   //   "top",
@@ -126,14 +127,14 @@ export function Pane({ title, index }: { title: string; index: number }) {
     addEventListeners();
   }, [addEventListeners, data]);
 
-  // if (isPending) {
-  //   return (
-  //     <div
-  //       className="h-screen p-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[650px] w-[650px] bg-white sticky"
-  //       style={{ zIndex: index, right: index * 40, scrollbarWidth: "thin" }}
-  //     ></div>
-  //   );
-  // }
+  if (isPending) {
+    return (
+      <div
+        className="h-screen p-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[650px] w-[650px] bg-white sticky"
+        style={{ zIndex: index, right: index * 40, scrollbarWidth: "thin" }}
+      ></div>
+    );
+  }
 
   if (isError) {
     return null;
@@ -158,4 +159,6 @@ export function Pane({ title, index }: { title: string; index: number }) {
       </div>
     );
   }
+
+  return <div className="bg-white sticky min-w-[650px]"> </div>;
 }
