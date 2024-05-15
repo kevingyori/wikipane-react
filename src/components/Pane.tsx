@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 async function fetchPage(title: string) {
@@ -12,7 +12,7 @@ async function fetchPage(title: string) {
     }
     return response.text();
   } catch (error) {
-    console.error(error);
+    throw new Error("Network response was not ok");
   }
 }
 
@@ -20,9 +20,13 @@ export function Pane({ title, index }: { title: string; index: number }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const htmlPage = useRef<HTMLDivElement>(null);
   const [pageTitle, setPageTitle] = useState("");
+
+  const queryKey = useMemo(() => ["page", title], [title]);
+  const fetchPageMemoized = useCallback(() => fetchPage(title), [title]);
+
   const { data, isPending, isError } = useQuery({
-    queryKey: ["page", title],
-    queryFn: () => fetchPage(title),
+    queryKey: queryKey,
+    queryFn: fetchPageMemoized,
     enabled: title !== "search",
     retry: 0,
     refetchOnWindowFocus: false,
@@ -98,8 +102,8 @@ export function Pane({ title, index }: { title: string; index: number }) {
   if (isPending) {
     return (
       <div
-        className="h-screen p-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[600px] w-[600px] bg-white"
-        style={{ scrollbarWidth: "thin" }}
+        className="h-screen p-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[650px] w-[650px] bg-white sticky"
+        style={{ zIndex: index, right: index * 40, scrollbarWidth: "thin" }}
       ></div>
     );
   }

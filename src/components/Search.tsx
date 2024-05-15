@@ -6,7 +6,7 @@ import { Command } from "cmdk";
 import "../cmdk.scss";
 
 function fetchSearchResults(query: string) {
-  const url = `https://en.wikipedia.org/w/api.php?origin=*&action=opensearch&format=json&search=${query}&namespace=0&limit=10&formatversion=2`;
+  const url = `https://en.wikipedia.org/w/api.php?origin=*&action=opensearch&format=json&search=${query}&namespace=0&limit=5&formatversion=2`;
   if (query.length < 3) return { data: [], isPending: false, isError: false };
   return fetch(url).then((res) => res.json());
 }
@@ -85,6 +85,7 @@ export function Search({
           ? data[1].map((result: string, i: number) => (
               <Command.Item
                 key={result}
+                value={data[3][i].substring(data[3][i].lastIndexOf("/") + 1)}
                 onClick={() => {
                   const title = data[3][i].substring(
                     data[3][i].lastIndexOf("/") + 1,
