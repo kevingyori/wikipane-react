@@ -77,17 +77,19 @@ export function Search() {
   const searchResults = useMemo(() => {
     return !isPending && !isError && data[1]
       ? data[1].map((result: string, i: number) => (
-          <div
-            key={result}
-            onClick={() => {
-              const title = data[3][i].substring(
-                data[3][i].lastIndexOf("/") + 1,
-              );
-              handleNavigateToPage(title);
-            }}
-          >
-            {result}
-          </div>
+          <>
+            <Command.Item
+              key={result}
+              onClick={() => {
+                const title = data[3][i].substring(
+                  data[3][i].lastIndexOf("/") + 1,
+                );
+                handleNavigateToPage(title);
+              }}
+            >
+              {result}
+            </Command.Item>
+          </>
         ))
       : null;
   }, [data, isPending, isError, handleNavigateToPage]);
