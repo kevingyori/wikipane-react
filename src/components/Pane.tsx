@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SetURLSearchParams, useSearchParams } from "react-router-dom";
 import "../wikipedia.css";
+import { SquareX } from "lucide-react";
 
 async function fetchPage(title: string) {
   const url = `https://en.wikipedia.org/api/rest_v1/page/html/${title}`;
@@ -58,18 +59,18 @@ function WikiPage({
 
       if (title !== null) {
         e.preventDefault();
-        const index = searchParams.getAll("wikiPage").indexOf(title);
-        if (index < searchParams.getAll("wikiPage").length - 1) {
-          setSearchParams((prev) => {
-            const wikiPages = prev.getAll("wikiPage");
-            wikiPages.splice(index + 1, wikiPages.length - index - 1);
-            prev.delete("wikiPage");
-            wikiPages.forEach((wikiPage) => {
-              prev.append("wikiPage", wikiPage);
-            });
-            return prev;
-          });
-        }
+        // const index = searchParams.getAll("wikiPage").indexOf(title);
+        // if (index < searchParams.getAll("wikiPage").length - 1) {
+        //   setSearchParams((prev) => {
+        //     const wikiPages = prev.getAll("wikiPage");
+        //     wikiPages.splice(index + 1, wikiPages.length - index - 1);
+        //     prev.delete("wikiPage");
+        //     wikiPages.forEach((wikiPage) => {
+        //       prev.append("wikiPage", wikiPage);
+        //     });
+        //     return prev;
+        //   });
+        // }
 
         setSearchParams((prev) => {
           prev.append("wikiPage", title);
@@ -227,7 +228,9 @@ export function Pane({
           className="w-10 min-w-10 sticky cursor-vertical-text text-gray-700"
           style={{ zIndex: index, right: index * 40 }}
         >
-          <button onClick={closePane}>X</button>
+          <button onClick={closePane} className="p-2">
+            <SquareX className="text-gray-100 hover:text-gray-600 transition-colors" />
+          </button>
           {!isPending ? memoizedWikiTitle : " "}
         </div>
         <div className="h-[calc(100vh-20px)] py-3 pr-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[650px] w-[650px] scrollbar-thin">
