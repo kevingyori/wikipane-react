@@ -88,12 +88,12 @@ function WikiPanes({
           <Pane
             title={title}
             index={key}
-            // isInactive={inactivePanes.includes(key)}
-            isInactive={false}
+            isInactive={inactivePanes.includes(key)}
+            // isInactive={false}
           />
         </div>
       )),
-    [memoizedSearchParams],
+    [memoizedSearchParams, inactivePanes],
   );
   return <>{memoizedPanes}</>;
 }

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 async function fetchPage(title: string) {
-  const url = `https://en.wikipedia.org/w/rest.php/v1/page/${title}/html`;
+  const url = `https://en.wikipedia.org/api/rest_v1/page/html/${title}`;
   try {
     const response = await fetch(url);
     if (!response.ok) {
@@ -22,18 +22,11 @@ function WikiPage({
   pageRef: React.MutableRefObject<HTMLDivElement | null>;
   data: string;
 }) {
-  // const html = data.replace('<base href="//en.wikipedia.org/wiki/">', "");
-  const html = new DOMParser()
-    .parseFromString(data, "text/html")
-    .querySelector("body");
-  // html?.querySelector("base")?.remove();
-  console.log(html);
-
   return (
     <div
       ref={pageRef}
       className="overflow-hidden fade-in"
-      dangerouslySetInnerHTML={{ __html: html?.innerHTML }}
+      dangerouslySetInnerHTML={{ __html: data }}
     />
   );
 }
@@ -140,17 +133,13 @@ export function Pane({
       (prev) => pageRef.current?.querySelector("title")?.textContent ?? prev,
     );
 
-    const html = new DOMParser().parseFromString(data, "text/html");
-    const title = html.querySelector("title")?.textContent;
-    // console.log(title, html);
-
     addEventListeners();
   }, [addEventListeners, data]);
 
-  // const memoizedWikiPage = useMemo(
-  //   () => <WikiPage pageRef={pageRef} data={data || ""} />,
-  //   [data],
-  // );
+  const memoizedWikiPage = useMemo(
+    () => <WikiPage pageRef={pageRef} data={data || ""} />,
+    [data],
+  );
 
   function closePane() {
     setSearchParams((prev) => {
@@ -186,14 +175,14 @@ export function Pane({
         >
           <button onClick={closePane}>X</button>
           {!isPending ? <WikiTitle title={pageTitle} /> : " "}
-          {/* {isInactive ? "i" : "a"} */}
+          {/* {isInactive ? "inactive" : "active"} */}
         </div>
         <div className="h-[calc(100vh-20px)] py-3 pr-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[650px] w-[650px] scrollbar-thin">
           <div
             className="text-2xl font-bold"
             dangerouslySetInnerHTML={{ __html: pageTitle }}
           ></div>
-          {!isInactive ? <WikiPage pageRef={pageRef} data={data} /> : " "}
+          {!isInactive ? memoizedWikiPage : " "}
         </div>
       </div>
     );
