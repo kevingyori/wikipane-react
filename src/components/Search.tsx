@@ -34,19 +34,24 @@ function useSearchQuery(searchQuery: string) {
   });
 }
 
-export function Search() {
+export function Search({
+  open,
+  setOpen,
+}: {
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   const [query, setQuery] = useState("");
   const [, setSearchParams] = useSearchParams();
   const { data, isPending, isError } = useSearchQuery(query);
   const [title, setTitle] = useState("");
   const [searchParams] = useSearchParams();
-  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (searchParams.getAll("wikiPage").length === 0) {
       setOpen(true);
     }
-  }, [searchParams]);
+  }, [searchParams, setOpen]);
 
   const handleNavigateToPage = useCallback(
     (title: string) => {
