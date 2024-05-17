@@ -5,7 +5,6 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -42,7 +41,6 @@ export function Search() {
   const [title, setTitle] = useState("");
   const [searchParams] = useSearchParams();
   const [open, setOpen] = useState(false);
-  const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     if (searchParams.getAll("wikiPage").length === 0) {
@@ -65,11 +63,6 @@ export function Search() {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((open) => !open);
-        // if (open) {
-        //   dialogRef.current?.showModal();
-        // } else {
-        //   dialogRef.current?.close();
-        // }
       }
       if (e.key === "Enter") {
         e.preventDefault();
@@ -78,7 +71,7 @@ export function Search() {
         handleNavigateToPage(title);
       }
     },
-    [title, handleNavigateToPage, setOpen, open],
+    [title, handleNavigateToPage, setOpen],
   );
 
   const searchResults = useMemo(() => {
@@ -106,10 +99,6 @@ export function Search() {
 
   return (
     <>
-      {/* <dialog ref={dialogRef}> */}
-      {/*   <input value={query} onChange={(e) => setQuery(e.target.value)} /> */}
-      {/*   {searchResults} */}
-      {/* </dialog> */}
       <Command.Dialog
         value={title}
         onValueChange={setTitle}
@@ -127,7 +116,7 @@ export function Search() {
         <Command.List>
           <Command.Empty>No results found.</Command.Empty>
           <Command.Separator />
-          {/* {searchResults} */}
+          {searchResults}
         </Command.List>
       </Command.Dialog>
     </>
