@@ -78,7 +78,7 @@ function WikiPage({
         });
       }
     },
-    [searchParams, setSearchParams],
+    [setSearchParams],
   );
 
   const handleBodyRender = useCallback(() => {
@@ -229,7 +229,7 @@ export function Pane({
           style={{ zIndex: index, right: index * 40 }}
         >
           <button onClick={closePane} className="p-2">
-            <SquareX className="text-gray-100 hover:text-gray-600 transition-colors" />
+            <SquareX className="text-gray-100 hover:text-red-500 transition-colors" />
           </button>
           {!isPending ? memoizedWikiTitle : " "}
         </div>
