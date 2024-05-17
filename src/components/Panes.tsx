@@ -1,14 +1,9 @@
 import { useSearchParams } from "react-router-dom";
 import { Pane } from "./Pane";
 import { Search } from "./Search";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useWindowSize } from "@uidotdev/usehooks";
+import { useMemo, useRef } from "react";
 
-function WikiPanes({
-  parentRef,
-}: {
-  parentRef: React.RefObject<HTMLDivElement>;
-}) {
+function WikiPanes() {
   const [searchParams] = useSearchParams();
   const memoizedSearchParams = useMemo(
     () => searchParams.getAll("wikiPage"),
@@ -16,7 +11,7 @@ function WikiPanes({
   );
   const pageRef = useRef<(HTMLDivElement | null)[]>([]);
 
-  const [inactivePanes, setInactivePanes] = useState<Array<number | null>>([]);
+  // const [inactivePanes, setInactivePanes] = useState<Array<number | null>>([]);
   // const size = useWindowSize();
 
   // const handleScroll = useCallback(() => {
@@ -93,7 +88,7 @@ function WikiPanes({
           />
         </div>
       )),
-    [memoizedSearchParams, inactivePanes],
+    [memoizedSearchParams],
   );
   return <>{memoizedPanes}</>;
 }
@@ -106,7 +101,7 @@ export function Panes() {
         className="flex flex-row overflow-x-scroll overflow-y-hidden scrollbar-thin h-screen w-screen"
         ref={ref}
       >
-        <WikiPanes parentRef={ref} />
+        <WikiPanes />
         <Search />
       </div>
     </>

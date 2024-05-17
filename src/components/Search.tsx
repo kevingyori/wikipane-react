@@ -5,6 +5,7 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -41,6 +42,7 @@ export function Search() {
   const [title, setTitle] = useState("");
   const [searchParams] = useSearchParams();
   const [open, setOpen] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     if (searchParams.getAll("wikiPage").length === 0) {
@@ -63,6 +65,11 @@ export function Search() {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((open) => !open);
+        // if (open) {
+        //   dialogRef.current?.showModal();
+        // } else {
+        //   dialogRef.current?.close();
+        // }
       }
       if (e.key === "Enter") {
         e.preventDefault();
@@ -71,25 +78,23 @@ export function Search() {
         handleNavigateToPage(title);
       }
     },
-    [title, handleNavigateToPage, setOpen],
+    [title, handleNavigateToPage, setOpen, open],
   );
 
   const searchResults = useMemo(() => {
     return !isPending && !isError && data[1]
       ? data[1].map((result: string, i: number) => (
-          <>
-            <Command.Item
-              key={result}
-              onClick={() => {
-                const title = data[3][i].substring(
-                  data[3][i].lastIndexOf("/") + 1,
-                );
-                handleNavigateToPage(title);
-              }}
-            >
-              {result}
-            </Command.Item>
-          </>
+          <div
+            key={result}
+            onClick={() => {
+              const title = data[3][i].substring(
+                data[3][i].lastIndexOf("/") + 1,
+              );
+              handleNavigateToPage(title);
+            }}
+          >
+            {result}
+          </div>
         ))
       : null;
   }, [data, isPending, isError, handleNavigateToPage]);
@@ -100,27 +105,31 @@ export function Search() {
   }, [handleKeyDown]);
 
   return (
-    <Command.Dialog
-      value={title}
-      onValueChange={setTitle}
-      open={open}
-      label="Search Wikipedia"
-      onOpenChange={setOpen}
-      className="linear shadow w-3/6 opacity-100 fixed top-[25%] left-[25%] -translate-y-1/2 translate-x--1/2 z-50 bg-white border border-gray-200 rounded-md overflow-hidden"
-    >
-      {/* <Command.Dialog open={open} onOpenChange={setOpen}> */}
-      <Command.Input
-        placeholder="Search Wikpedia"
-        onValueChange={setQuery}
-        value={query}
-      />
+    <>
+      {/* <dialog ref={dialogRef}> */}
+      {/*   <input value={query} onChange={(e) => setQuery(e.target.value)} /> */}
+      {/*   {searchResults} */}
+      {/* </dialog> */}
+      <Command.Dialog
+        value={title}
+        onValueChange={setTitle}
+        open={open}
+        label="Search Wikipedia"
+        onOpenChange={setOpen}
+        className="linear shadow w-3/6 opacity-100 fixed top-[25%] left-[25%] -translate-y-1/2 translate-x--1/2 z-50 bg-white border border-gray-200 rounded-md overflow-hidden"
+      >
+        <Command.Input
+          placeholder="Search Wikpedia"
+          onValueChange={setQuery}
+          value={query}
+        />
 
-      <Command.List>
-        {/* {isPending && <Command.Loading>Hang on…</Command.Loading>} */}
-        <Command.Empty>No results found.</Command.Empty>
-        <Command.Separator />
-        {searchResults}
-      </Command.List>
-    </Command.Dialog>
+        <Command.List>
+          <Command.Empty>No results found.</Command.Empty>
+          <Command.Separator />
+          {/* {searchResults} */}
+        </Command.List>
+      </Command.Dialog>
+    </>
   );
 }

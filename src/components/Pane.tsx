@@ -1,12 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useTransition,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SetURLSearchParams, useSearchParams } from "react-router-dom";
 import "../wikipedia.css";
 
