@@ -103,6 +103,10 @@ export function Panes() {
     () => <Options setSearchOpen={setSearchOpen} />,
     [],
   );
+  const memoizedSearch = useMemo(
+    () => <Search open={searchOpen} setOpen={setSearchOpen} />,
+    [searchOpen],
+  );
 
   return (
     <>
@@ -112,7 +116,8 @@ export function Panes() {
       >
         {memoizedWikiPanes}
         {memoizedOptions}
-        <Search open={searchOpen} setOpen={setSearchOpen} />
+        {memoizedSearch}
+        {/* <Search open={searchOpen} setOpen={setSearchOpen} /> */}
       </div>
     </>
   );

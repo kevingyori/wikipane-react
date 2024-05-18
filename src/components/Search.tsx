@@ -5,11 +5,13 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Command } from "cmdk";
 import "../cmdk.scss";
+import { createPortal } from "react-dom";
 
 function fetchSearchResults(query: string) {
   if (query.length < 3) return { data: [], isPending: false, isError: false };
@@ -46,12 +48,8 @@ export function Search({
   const { data, isPending, isError } = useSearchQuery(query);
   const [title, setTitle] = useState("");
   const [searchParams] = useSearchParams();
-
-  useEffect(() => {
-    if (searchParams.getAll("wikiPage").length === 0) {
-      setOpen(true);
-    }
-  }, [searchParams, setOpen]);
+  const isEmptyPage = searchParams.getAll("wikiPage").length === 0;
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleNavigateToPage = useCallback(
     (title: string) => {
@@ -69,14 +67,20 @@ export function Search({
         e.preventDefault();
         setOpen((open) => !open);
       }
-      if (e.key === "Enter") {
-        e.preventDefault();
+      if (e.key === "Escape") {
         setOpen(false);
-        setQuery("");
-        handleNavigateToPage(title);
+      }
+      if (open || isEmptyPage) {
+        if (e.key === "Enter") {
+          // TODO: handle empty search
+          e.preventDefault();
+          setOpen(false);
+          setQuery("");
+          handleNavigateToPage(title);
+        }
       }
     },
-    [title, handleNavigateToPage, setOpen],
+    [title, handleNavigateToPage, setOpen, open, isEmptyPage],
   );
 
   const searchResults = useMemo(() => {
@@ -104,28 +108,40 @@ export function Search({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
+  useEffect(() => {
+    if (open || isEmptyPage) {
+      inputRef.current?.focus();
+    }
+  }, [open, isEmptyPage]);
+
   return (
     <>
-      <Command.Dialog
-        value={title}
-        onValueChange={setTitle}
-        open={open}
-        label="Search Wikipedia"
-        onOpenChange={setOpen}
-        className="linear shadow w-3/6 opacity-100 fixed top-[25%] left-[25%] -translate-y-1/2 translate-x--1/2 z-50 bg-white border border-gray-200 rounded-md overflow-hidden"
-      >
-        <Command.Input
-          placeholder="Search Wikpedia"
-          onValueChange={setQuery}
-          value={query}
-        />
+      {createPortal(
+        <Command
+          value={title}
+          onValueChange={setTitle}
+          aria-hidden={!(open || isEmptyPage)}
+          style={{
+            visibility: open || isEmptyPage ? "visible" : "hidden",
+          }}
+          label="Search Wikipedia"
+          className="linear shadow w-3/6 max-w-lg fixed top-[30%] left-[25%] -translate-y-1/2 translate-x--1/2 z-50 bg-white border border-gray-200 rounded-md overflow-hidden"
+        >
+          <Command.Input
+            placeholder="Search Wikpedia"
+            onValueChange={setQuery}
+            value={query}
+            ref={inputRef}
+          />
 
-        <Command.List>
-          <Command.Empty>No results found.</Command.Empty>
-          <Command.Separator />
-          {searchResults}
-        </Command.List>
-      </Command.Dialog>
+          <Command.List>
+            <Command.Empty>No results found.</Command.Empty>
+            <Command.Separator />
+            {searchResults}
+          </Command.List>
+        </Command>,
+        document.body,
+      )}
     </>
   );
 }
