@@ -38,6 +38,7 @@ export function Panes() {
   const ref = useRef<HTMLDivElement>(null);
 
   const memoizedWikiPanes = useMemo(() => <WikiPanes />, []);
+
   const memoizedOptions = useMemo(
     () => <Options setSearchOpen={setSearchOpen} />,
     [],
