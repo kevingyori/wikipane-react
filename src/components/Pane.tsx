@@ -135,7 +135,6 @@ function WikiTitle({ title }: { title: string }) {
 
 export function Pane({ title, index }: { title: string; index: number }) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [pageTitle, setPageTitle] = useState("");
 
   const queryKey = useMemo(() => ["page", title], [title]);
   const fetchPageMemoized = useCallback(() => fetchPage(title), [title]);
@@ -157,13 +156,9 @@ export function Pane({ title, index }: { title: string; index: number }) {
 
   const html = useMemo(() => parseHTML(data ?? ""), [data, parseHTML]);
 
-  useEffect(() => {
-    console.log("setting page title");
-    const htmlTitle = html
-      .querySelector("head")
-      ?.querySelector("title")?.textContent;
-    setPageTitle((prev) => htmlTitle ?? prev);
-  }, [html]);
+  const pageTitle = html
+    .querySelector("head")
+    ?.querySelector("title")?.textContent;
 
   const memoizedWikiPage = useMemo(
     () => (
