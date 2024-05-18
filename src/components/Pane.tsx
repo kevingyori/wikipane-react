@@ -21,12 +21,10 @@ function WikiPage({
   body,
   searchParams,
   setSearchParams,
-  isInactive,
 }: {
   body: HTMLBodyElement | null;
   searchParams: URLSearchParams;
   setSearchParams: SetURLSearchParams;
-  isInactive: boolean;
 }) {
   const styleLinks = useCallback(
     (link: HTMLAnchorElement) => {
@@ -116,17 +114,13 @@ function WikiPage({
   }, [addEventListener]);
 
   return (
-    <>
-      {!isInactive ? (
-        <div
-          ref={ref}
-          className="overflow-hidden fade-in"
-          dangerouslySetInnerHTML={{
-            __html: renderedBody,
-          }}
-        />
-      ) : null}
-    </>
+    <div
+      ref={ref}
+      className="overflow-hidden fade-in"
+      dangerouslySetInnerHTML={{
+        __html: renderedBody,
+      }}
+    />
   );
 }
 
@@ -139,15 +133,7 @@ function WikiTitle({ title }: { title: string }) {
   );
 }
 
-export function Pane({
-  title,
-  index,
-  isInactive,
-}: {
-  title: string;
-  index: number;
-  isInactive: boolean;
-}) {
+export function Pane({ title, index }: { title: string; index: number }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [pageTitle, setPageTitle] = useState("");
 
@@ -185,10 +171,9 @@ export function Pane({
         body={html?.querySelector("body")}
         searchParams={searchParams}
         setSearchParams={setSearchParams}
-        isInactive={isInactive}
       />
     ),
-    [html, searchParams, setSearchParams, isInactive],
+    [html, searchParams, setSearchParams],
   );
 
   const memoizedWikiTitle = useMemo(
