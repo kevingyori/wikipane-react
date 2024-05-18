@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { SetURLSearchParams, useSearchParams } from "react-router-dom";
 import "../wikipedia.css";
 import { SquareX } from "lucide-react";
@@ -156,9 +156,8 @@ export function Pane({ title, index }: { title: string; index: number }) {
 
   const html = useMemo(() => parseHTML(data ?? ""), [data, parseHTML]);
 
-  const pageTitle = html
-    .querySelector("head")
-    ?.querySelector("title")?.textContent;
+  const pageTitle =
+    html.querySelector("head")?.querySelector("title")?.textContent ?? "";
 
   const memoizedWikiPage = useMemo(
     () => (
