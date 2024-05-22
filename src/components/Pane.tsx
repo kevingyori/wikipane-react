@@ -204,11 +204,11 @@ export function Pane({ title, index }: { title: string; index: number }) {
     return (
       <div className="flex bg-white scrollbar-thin">
         <div
-          className="w-10 min-w-10 sticky cursor-vertical-text text-gray-700"
+          className="w-10 min-w-10 sticky cursor-vertical-text text-gray-700 group"
           style={{ zIndex: index, right: index * 40 }}
         >
           <button onClick={closePane} className="p-2">
-            <SquareX className="text-gray-100 hover:text-red-500 transition-colors" />
+            <SquareX className="text-gray-100 group-hover:text-gray-400 hover:!text-red-500 transition-colors" />
           </button>
           {!isPending ? memoizedWikiTitle : " "}
         </div>
