@@ -30,7 +30,8 @@ function WikiPage({
     (link: HTMLAnchorElement) => {
       if (
         searchParams
-          .getAll("wikiPage")
+          .get("page")
+          ?.split(",")
           .includes(link.getAttribute("title") as string)
       ) {
         link.classList.add("bg-blue-200");
@@ -57,26 +58,32 @@ function WikiPage({
 
       if (title !== null) {
         e.preventDefault();
-        // const index = searchParams.getAll("wikiPage").indexOf(title);
-        // if (index < searchParams.getAll("wikiPage").length - 1) {
+        // const index = searchParams.getAll("page").indexOf(title);
+        // if (index < searchParams.getAll("page").length - 1) {
         //   setSearchParams((prev) => {
-        //     const wikiPages = prev.getAll("wikiPage");
+        //     const wikiPages = prev.getAll("page");
         //     wikiPages.splice(index + 1, wikiPages.length - index - 1);
-        //     prev.delete("wikiPage");
+        //     prev.delete("page");
         //     wikiPages.forEach((wikiPage) => {
-        //       prev.append("wikiPage", wikiPage);
+        //       prev.append("page", wikiPage);
         //     });
         //     return prev;
         //   });
         // }
 
         setSearchParams((prev) => {
-          prev.append("wikiPage", title);
+          const wikiPages = prev.get("page")?.split(",");
+          if (!wikiPages) {
+            prev.append("page", title);
+            return prev;
+          }
+          wikiPages?.push(title);
+          prev.set("page", wikiPages?.join(","));
           return prev;
         });
       }
     },
-    [setSearchParams],
+    [setSearchParams, searchParams],
   );
 
   const handleBodyRender = useCallback(() => {
@@ -177,12 +184,16 @@ export function Pane({ title, index }: { title: string; index: number }) {
 
   function closePane() {
     setSearchParams((prev) => {
-      const wikiPages = prev.getAll("wikiPage");
+      const wikiPages = prev.get("page")?.split(",");
+      if (!wikiPages) {
+        return prev;
+      }
+      if (wikiPages.length === 1) {
+        prev.delete("page");
+        return prev;
+      }
       wikiPages.splice(index, 1);
-      prev.delete("wikiPage");
-      wikiPages.forEach((wikiPage) => {
-        prev.append("wikiPage", wikiPage);
-      });
+      prev.set("page", wikiPages.join(","));
       return prev;
     });
   }

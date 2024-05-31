@@ -48,13 +48,19 @@ export function Search({
   const { data, isPending, isError } = useSearchQuery(query);
   const [title, setTitle] = useState("");
   const [searchParams] = useSearchParams();
-  const isEmptyPage = searchParams.getAll("wikiPage").length === 0;
+  const isEmptyPage = searchParams.get("page")?.split(",") === undefined;
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleNavigateToPage = useCallback(
     (title: string) => {
       setSearchParams((prev) => {
-        prev.append("wikiPage", title);
+        const wikiPages = prev.get("wikiPage")?.split(",");
+        if (!wikiPages) {
+          prev.append("page", title);
+          return prev;
+        }
+        wikiPages?.push(title);
+        prev.set("page", wikiPages?.join(","));
         return prev;
       });
     },

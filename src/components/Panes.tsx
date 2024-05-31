@@ -7,14 +7,14 @@ import { Options } from "./Options";
 function WikiPanes() {
   const [searchParams] = useSearchParams();
   const memoizedSearchParams = useMemo(
-    () => searchParams.getAll("wikiPage"),
+    () => searchParams.get("page")?.split(","),
     [searchParams],
   );
   const pageRef = useRef<(HTMLDivElement | null)[]>([]);
 
   const memoizedPanes = useMemo(
     () =>
-      memoizedSearchParams.map((title, key) => (
+      memoizedSearchParams?.map((title, key) => (
         <div
           key={key}
           className="shadow-xl shadow-gray-300"
