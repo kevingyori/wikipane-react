@@ -198,41 +198,32 @@ export function Pane({ title, index }: { title: string; index: number }) {
     });
   }
 
-  if (isPending) {
-    return (
+  return (
+    <div className="flex bg-white scrollbar-thin">
       <div
-        className="h-screen p-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[650px] w-[650px] bg-white sticky"
-        style={{ zIndex: index, right: index * 40, scrollbarWidth: "thin" }}
-      ></div>
-    );
-  }
-
-  if (isError) {
-    return null;
-  }
-
-  if (data) {
-    return (
-      <div className="flex bg-white scrollbar-thin">
-        <div
-          className="w-10 min-w-10 sticky cursor-vertical-text text-gray-700 group"
-          style={{ zIndex: index, right: index * 40 }}
-        >
-          <button onClick={closePane} className="p-2">
-            <SquareX className="text-gray-100 group-hover:text-gray-400 hover:!text-red-500 transition-colors" />
-          </button>
-          {!isPending ? memoizedWikiTitle : " "}
-        </div>
-        <div className="h-[calc(100vh-20px)] py-3 pr-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[650px] w-[650px] scrollbar-thin">
-          <div
-            className="text-2xl font-bold"
-            dangerouslySetInnerHTML={{ __html: pageTitle }}
-          ></div>
-          {memoizedWikiPage}
-        </div>
+        className="w-10 min-w-10 sticky cursor-vertical-text text-gray-700 group"
+        style={{ zIndex: index, right: index * 40 }}
+      >
+        <button onClick={closePane} className="p-2">
+          <SquareX className="text-gray-100 group-hover:text-gray-400 hover:!text-red-500 transition-colors" />
+        </button>
+        {isPending ? <WikiTitle title={title} /> : null}
+        {isError && <WikiTitle title="Error" />}
+        {isPending || isError ? null : memoizedWikiTitle}
       </div>
-    );
-  }
-
-  return <div className="bg-white sticky min-w-[650px]"> </div>;
+      <div className="h-[calc(100vh-20px)] py-3 pr-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[650px] w-[650px] scrollbar-thin">
+        {isPending && <div>Loading...</div>}
+        {isError && <div>Error</div>}
+        {isPending || isError ? null : (
+          <>
+            <div
+              className="text-2xl font-bold"
+              dangerouslySetInnerHTML={{ __html: pageTitle }}
+            ></div>
+            {memoizedWikiPage}
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
