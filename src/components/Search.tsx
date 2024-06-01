@@ -54,7 +54,7 @@ export function Search({
   const handleNavigateToPage = useCallback(
     (title: string) => {
       setSearchParams((prev) => {
-        const wikiPages = prev.get("wikiPage")?.split(",");
+        const wikiPages = prev.get("page")?.split(",");
         if (!wikiPages) {
           prev.append("page", title);
           return prev;
@@ -79,6 +79,7 @@ export function Search({
       if (open || isEmptyPage) {
         if (e.key === "Enter") {
           // TODO: handle empty search
+          if (query === "") return;
           e.preventDefault();
           setOpen(false);
           setQuery("");
@@ -86,7 +87,7 @@ export function Search({
         }
       }
     },
-    [title, handleNavigateToPage, setOpen, open, isEmptyPage],
+    [title, handleNavigateToPage, setOpen, open, isEmptyPage, query],
   );
 
   const searchResults = useMemo(() => {
