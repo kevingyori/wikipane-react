@@ -80,6 +80,7 @@ export function Search({
         if (e.key === "Enter") {
           // TODO: handle empty search
           if (query === "") return;
+          if (title === "") return;
           e.preventDefault();
           setOpen(false);
           setQuery("");
