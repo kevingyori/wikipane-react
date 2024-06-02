@@ -6,38 +6,20 @@ import { Options } from "./Options";
 
 function WikiPanes() {
   const [searchParams] = useSearchParams();
-  const memoizedSearchParams = useMemo(
-    () => searchParams.get("page")?.split(","),
-    [searchParams],
-  );
-  const pageRef = useRef<(HTMLDivElement | null)[]>([]);
+  const searchParamsArray = searchParams.get("page")?.split(",");
 
-  const memoizedPanes = useMemo(
-    () =>
-      memoizedSearchParams?.map((title, key) => (
-        <div
-          key={key}
-          className="shadow-xl shadow-gray-300"
-          ref={(ref) => (pageRef.current[key] = ref)}
-          style={{
-            position: "sticky",
-            left: key * 40,
-            right: -650 + (memoizedSearchParams.length - key - 1) * 40,
-          }}
-        >
-          <Pane title={title} index={key} />
-        </div>
-      )),
-    [memoizedSearchParams],
+  return (
+    <>
+      {searchParamsArray?.map((title, key) => (
+        <Pane title={title} index={key} key={title} />
+      ))}
+    </>
   );
-  return <>{memoizedPanes}</>;
 }
 
 export function Panes() {
   const [searchOpen, setSearchOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-
-  const memoizedWikiPanes = useMemo(() => <WikiPanes />, []);
 
   const memoizedOptions = useMemo(
     () => <Options setSearchOpen={setSearchOpen} />,
@@ -54,7 +36,7 @@ export function Panes() {
         className="flex flex-row overflow-x-scroll overflow-y-hidden scrollbar-thin h-screen w-screen"
         ref={ref}
       >
-        {memoizedWikiPanes}
+        <WikiPanes />
         {memoizedOptions}
         {memoizedSearch}
       </div>

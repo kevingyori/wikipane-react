@@ -39,7 +39,7 @@ function WikiPage({
         link.classList.remove("bg-blue-200");
       }
     },
-    [searchParams],
+    [searchParams]
   );
 
   const addEventListener = useCallback(
@@ -83,7 +83,7 @@ function WikiPage({
         });
       }
     },
-    [setSearchParams, searchParams],
+    [setSearchParams, searchParams]
   );
 
   const handleBodyRender = useCallback(() => {
@@ -120,6 +120,16 @@ function WikiPage({
     };
   }, [addEventListener]);
 
+  return <RenderedBody renderedBody={renderedBody} ref={ref} />;
+}
+
+function RenderedBody({
+  renderedBody,
+  ref,
+}: {
+  renderedBody: string;
+  ref: React.RefObject<HTMLDivElement>;
+}) {
   return (
     <div
       ref={ref}
@@ -163,8 +173,10 @@ export function Pane({ title, index }: { title: string; index: number }) {
 
   const html = useMemo(() => parseHTML(data ?? ""), [data, parseHTML]);
 
-  const pageTitle =
-    html.querySelector("head")?.querySelector("title")?.textContent ?? "";
+  const pageTitle = useMemo(
+    () => html.querySelector("head")?.querySelector("title")?.textContent ?? "",
+    [html]
+  );
 
   const memoizedWikiPage = useMemo(
     () => (
@@ -174,12 +186,12 @@ export function Pane({ title, index }: { title: string; index: number }) {
         setSearchParams={setSearchParams}
       />
     ),
-    [html, searchParams, setSearchParams],
+    [html, searchParams, setSearchParams]
   );
 
   const memoizedWikiTitle = useMemo(
     () => <WikiTitle title={pageTitle} />,
-    [pageTitle],
+    [pageTitle]
   );
 
   function closePane() {
@@ -199,34 +211,44 @@ export function Pane({ title, index }: { title: string; index: number }) {
   }
 
   return (
-    <div className="flex bg-white scrollbar-thin">
-      <div
-        className="w-10 min-w-10 sticky cursor-vertical-text text-gray-700 group"
-        style={{ zIndex: index, right: index * 40 }}
-      >
-        <button onClick={closePane} className="p-2">
-          <SquareX className="text-gray-100 group-hover:text-gray-400 hover:!text-red-500 transition-colors" />
-        </button>
-        {isPending ? <WikiTitle title={title} /> : null}
-        {isError && <WikiTitle title="Error" />}
-        {isPending || isError ? null : memoizedWikiTitle}
-      </div>
-      <div className="h-[calc(100vh-20px)] py-3 pr-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[650px] w-[650px] scrollbar-thin">
-        {isPending && (
-          <>
-            <div className="text-2xl font-bold">{title}</div>
-          </>
-        )}
-        {isError && <div>Error</div>}
-        {isPending || isError ? null : (
-          <>
-            <div
-              className="text-2xl font-bold"
-              dangerouslySetInnerHTML={{ __html: pageTitle }}
-            ></div>
-            {memoizedWikiPage}
-          </>
-        )}
+    <div
+      className="shadow-xl shadow-gray-300"
+      style={{
+        position: "sticky",
+        left: index * 40,
+        right:
+          -650 + (searchParams.get("page").split(",").length - index - 1) * 40,
+      }}
+    >
+      <div className="flex bg-white scrollbar-thin">
+        <div
+          className="w-10 min-w-10 sticky cursor-vertical-text text-gray-700 group"
+          style={{ zIndex: index, right: index * 40 }}
+        >
+          <button onClick={closePane} className="p-2">
+            <SquareX className="text-gray-100 group-hover:text-gray-400 hover:!text-red-500 transition-colors" />
+          </button>
+          {isPending ? <WikiTitle title={title} /> : null}
+          {isError && <WikiTitle title="Error" />}
+          {isPending || isError ? null : memoizedWikiTitle}
+        </div>
+        <div className="h-[calc(100vh-20px)] py-3 pr-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[650px] w-[650px] scrollbar-thin">
+          {isPending && (
+            <>
+              <div className="text-2xl font-bold">{title}</div>
+            </>
+          )}
+          {isError && <div>Error</div>}
+          {isPending || isError ? null : (
+            <>
+              <div
+                className="text-2xl font-bold"
+                dangerouslySetInnerHTML={{ __html: pageTitle }}
+              ></div>
+              {memoizedWikiPage}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
