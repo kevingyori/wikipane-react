@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { SetURLSearchParams, useSearchParams } from "react-router-dom";
 import "../wikipedia.css";
-import { SquareX } from "lucide-react";
+import { Globe, SquareX } from "lucide-react";
 
 async function fetchPage(title: string) {
   const url = `https://en.wikipedia.org/api/rest_v1/page/html/${title}`;
@@ -229,7 +229,11 @@ export function Pane({ title, index }: { title: string; index: number }) {
           <button onClick={closePane} className="p-2">
             <SquareX className="text-gray-100 group-hover:text-gray-400 hover:!text-red-500 transition-colors" />
           </button>
-          {isPending ? <WikiTitle title={title} /> : null}
+          {isPending ? (
+            <>
+              <WikiTitle title={title} />
+            </>
+          ) : null}
           {isError && <WikiTitle title="Error" />}
           {isPending || isError ? null : memoizedWikiTitle}
         </div>
@@ -237,6 +241,7 @@ export function Pane({ title, index }: { title: string; index: number }) {
           {isPending && (
             <>
               <div className="text-2xl font-bold">{title}</div>
+              <Globe className="animate-spin mx-auto mt-8 w-6" />
             </>
           )}
           {isError && <div>Error</div>}
@@ -245,7 +250,7 @@ export function Pane({ title, index }: { title: string; index: number }) {
               <div
                 className="text-2xl font-bold"
                 dangerouslySetInnerHTML={{ __html: pageTitle }}
-              ></div>
+              />
               {memoizedWikiPage}
             </>
           )}
