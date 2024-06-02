@@ -178,22 +178,6 @@ export function Pane({ title, index }: { title: string; index: number }) {
     [html],
   );
 
-  const memoizedWikiPage = useMemo(
-    () => (
-      <WikiPage
-        body={html?.querySelector("body")}
-        searchParams={searchParams}
-        setSearchParams={setSearchParams}
-      />
-    ),
-    [html, searchParams, setSearchParams],
-  );
-
-  const memoizedWikiTitle = useMemo(
-    () => <WikiTitle title={pageTitle} />,
-    [pageTitle],
-  );
-
   function closePane() {
     setSearchParams((prev) => {
       const wikiPages = prev.get("page")?.split(",");
@@ -235,7 +219,7 @@ export function Pane({ title, index }: { title: string; index: number }) {
             </>
           ) : null}
           {isError && <WikiTitle title="Error" />}
-          {isPending || isError ? null : memoizedWikiTitle}
+          {isPending || isError ? null : <WikiTitle title={pageTitle} />}
         </div>
         <div className="scroll-y h-[calc(100vh-20px)] w-[650px] min-w-[650px] overflow-x-hidden overflow-y-scroll py-3 pr-3 scrollbar-thin">
           {isPending && (
@@ -251,7 +235,11 @@ export function Pane({ title, index }: { title: string; index: number }) {
                 className="text-2xl font-bold"
                 dangerouslySetInnerHTML={{ __html: pageTitle }}
               />
-              {memoizedWikiPage}
+              <WikiPage
+                body={html?.querySelector("body")}
+                searchParams={searchParams}
+                setSearchParams={setSearchParams}
+              />
             </>
           )}
         </div>

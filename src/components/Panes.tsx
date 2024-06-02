@@ -10,8 +10,8 @@ function WikiPanes() {
 
   return (
     <>
-      {searchParamsArray?.map((title, key) => (
-        <Pane title={title} index={key} key={title} />
+      {searchParamsArray?.map((title, index) => (
+        <Pane title={title} index={index} key={title + index} />
       ))}
     </>
   );
