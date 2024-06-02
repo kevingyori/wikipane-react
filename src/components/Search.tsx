@@ -5,11 +5,13 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Command } from "cmdk";
 import "../cmdk.scss";
+import { createPortal } from "react-dom";
 
 function fetchSearchResults(query: string) {
   if (query.length < 3) return { data: [], isPending: false, isError: false };
@@ -34,24 +36,31 @@ function useSearchQuery(searchQuery: string) {
   });
 }
 
-export function Search() {
+export function Search({
+  open,
+  setOpen,
+}: {
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   const [query, setQuery] = useState("");
   const [, setSearchParams] = useSearchParams();
   const { data, isPending, isError } = useSearchQuery(query);
   const [title, setTitle] = useState("");
   const [searchParams] = useSearchParams();
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    if (searchParams.getAll("wikiPage").length === 0) {
-      setOpen(true);
-    }
-  }, [searchParams]);
+  const isEmptyPage = searchParams.get("page")?.split(",") === undefined;
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleNavigateToPage = useCallback(
     (title: string) => {
       setSearchParams((prev) => {
-        prev.append("wikiPage", title);
+        const wikiPages = prev.get("page")?.split(",");
+        if (!wikiPages) {
+          prev.append("page", title);
+          return prev;
+        }
+        wikiPages?.push(title);
+        prev.set("page", wikiPages?.join(","));
         return prev;
       });
     },
@@ -64,14 +73,22 @@ export function Search() {
         e.preventDefault();
         setOpen((open) => !open);
       }
-      if (e.key === "Enter") {
-        e.preventDefault();
+      if (e.key === "Escape") {
         setOpen(false);
-        setQuery("");
-        handleNavigateToPage(title);
+      }
+      if (open || isEmptyPage) {
+        if (e.key === "Enter") {
+          // TODO: handle empty search
+          if (query === "") return;
+          if (title === "") return;
+          e.preventDefault();
+          setOpen(false);
+          setQuery("");
+          handleNavigateToPage(title);
+        }
       }
     },
-    [title, handleNavigateToPage, setOpen],
+    [title, handleNavigateToPage, setOpen, open, isEmptyPage, query],
   );
 
   const searchResults = useMemo(() => {
@@ -99,28 +116,40 @@ export function Search() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
-  return (
-    <Command.Dialog
-      value={title}
-      onValueChange={setTitle}
-      open={open}
-      label="Search Wikipedia"
-      onOpenChange={setOpen}
-      className="linear shadow w-3/6 opacity-100 fixed top-[25%] left-[25%] -translate-y-1/2 translate-x--1/2 z-50 bg-white border border-gray-200 rounded-md overflow-hidden"
-    >
-      {/* <Command.Dialog open={open} onOpenChange={setOpen}> */}
-      <Command.Input
-        placeholder="Search Wikpedia"
-        onValueChange={setQuery}
-        value={query}
-      />
+  useEffect(() => {
+    if (open || isEmptyPage) {
+      inputRef.current?.focus();
+    }
+  }, [open, isEmptyPage]);
 
-      <Command.List>
-        {/* {isPending && <Command.Loading>Hang on…</Command.Loading>} */}
-        <Command.Empty>No results found.</Command.Empty>
-        <Command.Separator />
-        {searchResults}
-      </Command.List>
-    </Command.Dialog>
+  return (
+    <>
+      {createPortal(
+        <Command
+          value={title}
+          onValueChange={setTitle}
+          aria-hidden={!(open || isEmptyPage)}
+          style={{
+            visibility: open || isEmptyPage ? "visible" : "hidden",
+          }}
+          label="Search Wikipedia"
+          className="linear shadow w-[32rem] max-w-lg fixed top-[35%] left-[50%] -translate-y-1/2 -translate-x-1/2 z-50 bg-white border border-gray-200 rounded-md overflow-hidden"
+        >
+          <Command.Input
+            placeholder="Search Wikpedia"
+            onValueChange={setQuery}
+            value={query}
+            ref={inputRef}
+          />
+
+          <Command.List>
+            <Command.Empty>No results found.</Command.Empty>
+            <Command.Separator />
+            {searchResults}
+          </Command.List>
+        </Command>,
+        document.body,
+      )}
+    </>
   );
 }
