@@ -212,7 +212,11 @@ export function Pane({ title, index }: { title: string; index: number }) {
         {isPending || isError ? null : memoizedWikiTitle}
       </div>
       <div className="h-[calc(100vh-20px)] py-3 pr-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[650px] w-[650px] scrollbar-thin">
-        {isPending && <div>Loading...</div>}
+        {isPending && (
+          <>
+            <div className="text-2xl font-bold">{title}</div>
+          </>
+        )}
         {isError && <div>Error</div>}
         {isPending || isError ? null : (
           <>
