@@ -133,7 +133,7 @@ function RenderedBody({
   return (
     <div
       ref={ref}
-      className="overflow-hidden fade-in"
+      className="fade-in overflow-hidden"
       dangerouslySetInnerHTML={{
         __html: renderedBody,
       }}
@@ -144,7 +144,7 @@ function RenderedBody({
 function WikiTitle({ title }: { title: string }) {
   return (
     <p
-      className="font-medium text-lg rotate-90 pb-1.5 w-screen origin-bottom-left bg-white"
+      className="w-screen origin-bottom-left rotate-90 bg-white pb-1.5 text-lg font-medium"
       dangerouslySetInnerHTML={{ __html: title }}
     />
   );
@@ -223,11 +223,11 @@ export function Pane({ title, index }: { title: string; index: number }) {
     >
       <div className="flex bg-white scrollbar-thin">
         <div
-          className="w-10 min-w-10 sticky cursor-vertical-text text-gray-700 group"
+          className="group sticky w-10 min-w-10 cursor-vertical-text text-gray-700"
           style={{ zIndex: index, right: index * 40 }}
         >
           <button onClick={closePane} className="p-2">
-            <SquareX className="text-gray-100 group-hover:text-gray-400 hover:!text-red-500 transition-colors" />
+            <SquareX className="text-gray-100 transition-colors group-hover:text-gray-400 hover:!text-red-500" />
           </button>
           {isPending ? (
             <>
@@ -237,11 +237,11 @@ export function Pane({ title, index }: { title: string; index: number }) {
           {isError && <WikiTitle title="Error" />}
           {isPending || isError ? null : memoizedWikiTitle}
         </div>
-        <div className="h-[calc(100vh-20px)] py-3 pr-3 scroll-y overflow-y-scroll overflow-x-hidden min-w-[650px] w-[650px] scrollbar-thin">
+        <div className="scroll-y h-[calc(100vh-20px)] w-[650px] min-w-[650px] overflow-x-hidden overflow-y-scroll py-3 pr-3 scrollbar-thin">
           {isPending && (
             <>
               <div className="text-2xl font-bold">{title}</div>
-              <Globe className="animate-spin mx-auto mt-8 w-6" />
+              <Globe className="mx-auto mt-8 w-6 animate-spin" />
             </>
           )}
           {isError && <div>Error</div>}

@@ -12,7 +12,7 @@ function IconWrapper({
 }) {
   return (
     <div
-      className="text-gray-900 hover:cursor-pointer rounded-full p-4 bg-white transition-shadow hover:shadow-lg duration-300 border"
+      className="rounded-full border bg-white p-4 text-gray-900 transition-shadow duration-300 hover:cursor-pointer hover:shadow-lg"
       {...args}
     >
       {children}
@@ -37,7 +37,7 @@ export function Options({
   return (
     <>
       {createPortal(
-        <div className="absolute bottom-4 right-3 flex gap-3 flex-col-reverse opacity-50 hover:delay-0 delay-500 hover:opacity-100 transition-all duration-500">
+        <div className="absolute bottom-4 right-3 flex flex-col-reverse gap-3 opacity-50 transition-all delay-500 duration-500 hover:opacity-100 hover:delay-0">
           <IconWrapper onClick={() => setOpen((p: boolean) => !p)}>
             <Settings />
           </IconWrapper>

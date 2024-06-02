@@ -33,7 +33,7 @@ export function Panes() {
   return (
     <>
       <div
-        className="flex flex-row overflow-x-scroll overflow-y-hidden scrollbar-thin h-screen w-screen"
+        className="flex h-screen w-screen flex-row overflow-y-hidden overflow-x-scroll scrollbar-thin"
         ref={ref}
       >
         <WikiPanes />

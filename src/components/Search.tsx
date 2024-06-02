@@ -133,7 +133,7 @@ export function Search({
             visibility: open || isEmptyPage ? "visible" : "hidden",
           }}
           label="Search Wikipedia"
-          className="linear shadow w-[32rem] max-w-lg fixed top-[35%] left-[50%] -translate-y-1/2 -translate-x-1/2 z-50 bg-white border border-gray-200 rounded-md overflow-hidden"
+          className="linear fixed left-[50%] top-[35%] z-50 w-[32rem] max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-md border border-gray-200 bg-white shadow"
         >
           <Command.Input
             placeholder="Search Wikpedia"
