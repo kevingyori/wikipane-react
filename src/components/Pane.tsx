@@ -39,7 +39,7 @@ function WikiPage({
         link.classList.remove("bg-blue-200");
       }
     },
-    [searchParams]
+    [searchParams],
   );
 
   const addEventListener = useCallback(
@@ -83,7 +83,7 @@ function WikiPage({
         });
       }
     },
-    [setSearchParams, searchParams]
+    [setSearchParams, searchParams],
   );
 
   const handleBodyRender = useCallback(() => {
@@ -175,7 +175,7 @@ export function Pane({ title, index }: { title: string; index: number }) {
 
   const pageTitle = useMemo(
     () => html.querySelector("head")?.querySelector("title")?.textContent ?? "",
-    [html]
+    [html],
   );
 
   const memoizedWikiPage = useMemo(
@@ -186,12 +186,12 @@ export function Pane({ title, index }: { title: string; index: number }) {
         setSearchParams={setSearchParams}
       />
     ),
-    [html, searchParams, setSearchParams]
+    [html, searchParams, setSearchParams],
   );
 
   const memoizedWikiTitle = useMemo(
     () => <WikiTitle title={pageTitle} />,
-    [pageTitle]
+    [pageTitle],
   );
 
   function closePane() {
@@ -210,14 +210,15 @@ export function Pane({ title, index }: { title: string; index: number }) {
     });
   }
 
+  const searchParamsArray = searchParams.get("page")?.split(",") ?? [];
+
   return (
     <div
       className="shadow-xl shadow-gray-300"
       style={{
         position: "sticky",
         left: index * 40,
-        right:
-          -650 + (searchParams.get("page").split(",").length - index - 1) * 40,
+        right: -650 + (searchParamsArray.length - index - 1) * 40,
       }}
     >
       <div className="flex bg-white scrollbar-thin">
