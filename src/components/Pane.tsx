@@ -1,8 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { SetURLSearchParams, useSearchParams } from "react-router-dom";
-import "../wikipedia.css";
 import { Globe, SquareX } from "lucide-react";
+import { WikiTitle } from "./WikiTitle";
+import { WikiPage } from "./WikiPage";
+import { WikiSidebar } from "./WikiSidebar";
+import { WikiContent } from "./WikiContent";
 
 async function fetchPage(title: string) {
   const url = `https://en.wikipedia.org/api/rest_v1/page/html/${title}`;
@@ -15,139 +18,6 @@ async function fetchPage(title: string) {
   } catch (error) {
     throw new Error("Network response was not ok");
   }
-}
-
-function WikiPage({
-  body,
-  searchParams,
-  setSearchParams,
-}: {
-  body: HTMLBodyElement | null;
-  searchParams: URLSearchParams;
-  setSearchParams: SetURLSearchParams;
-}) {
-  const styleLinks = useCallback(
-    (link: HTMLAnchorElement) => {
-      if (
-        searchParams
-          .get("page")
-          ?.split(",")
-          .includes(link.getAttribute("title") as string)
-      ) {
-        link.classList.add("bg-blue-200");
-      } else {
-        link.classList.remove("bg-blue-200");
-      }
-    },
-    [searchParams],
-  );
-
-  const addEventListener = useCallback(
-    (e: MouseEvent, link: HTMLAnchorElement) => {
-      // don't add an event listener multiple times
-      if (link.getAttribute("data-event-listener")) {
-        // console.log("event listener already added");
-        return;
-      }
-
-      // add attribute to prevent adding event listener multiple times
-      link.setAttribute("data-event-listener", "true");
-      // console.log("event listener added");
-
-      const title = link.getAttribute("title");
-
-      if (title !== null) {
-        e.preventDefault();
-        // const index = searchParams.getAll("page").indexOf(title);
-        // if (index < searchParams.getAll("page").length - 1) {
-        //   setSearchParams((prev) => {
-        //     const wikiPages = prev.getAll("page");
-        //     wikiPages.splice(index + 1, wikiPages.length - index - 1);
-        //     prev.delete("page");
-        //     wikiPages.forEach((wikiPage) => {
-        //       prev.append("page", wikiPage);
-        //     });
-        //     return prev;
-        //   });
-        // }
-
-        setSearchParams((prev) => {
-          const wikiPages = prev.get("page")?.split(",");
-          if (!wikiPages) {
-            prev.append("page", title);
-            return prev;
-          }
-          wikiPages?.push(title);
-          prev.set("page", wikiPages?.join(","));
-          return prev;
-        });
-      }
-    },
-    [setSearchParams, searchParams],
-  );
-
-  const handleBodyRender = useCallback(() => {
-    body?.querySelectorAll("a").forEach((link) => {
-      if (link.getAttribute("rel") !== "mw:WikiLink") {
-        // console.log("link isn't a wiki link", link.getAttribute("rel"));
-        link.addEventListener("click", (e) => {
-          e.preventDefault();
-        });
-        link.removeAttribute("href");
-        return;
-      }
-
-      styleLinks(link);
-    });
-    console.log("body rendered", body);
-    return body?.innerHTML ?? "";
-  }, [body, styleLinks]);
-
-  const renderedBody = useMemo(() => handleBodyRender(), [handleBodyRender]);
-
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const current = ref.current?.querySelectorAll("a");
-    current?.forEach((link: HTMLAnchorElement) => {
-      link.addEventListener("click", (e) => addEventListener(e, link));
-    });
-
-    return () => {
-      current?.forEach((link: HTMLAnchorElement) => {
-        link.removeEventListener("click", (e) => addEventListener(e, link));
-      });
-    };
-  }, [addEventListener]);
-
-  return <RenderedBody renderedBody={renderedBody} ref={ref} />;
-}
-
-function RenderedBody({
-  renderedBody,
-  ref,
-}: {
-  renderedBody: string;
-  ref: React.RefObject<HTMLDivElement>;
-}) {
-  return (
-    <div
-      ref={ref}
-      className="fade-in overflow-hidden"
-      dangerouslySetInnerHTML={{
-        __html: renderedBody,
-      }}
-    />
-  );
-}
-
-function WikiTitle({ title }: { title: string }) {
-  return (
-    <div
-      className="w-screen origin-bottom-left rotate-90 bg-white pb-1.5 text-lg font-medium"
-      dangerouslySetInnerHTML={{ __html: title }}
-    />
-  );
 }
 
 export function Pane({ title, index }: { title: string; index: number }) {
@@ -166,10 +36,12 @@ export function Pane({ title, index }: { title: string; index: number }) {
     _optimisticResults: "optimistic",
   });
 
+  console.time("parsing html");
   const parseHTML = useCallback((data: string) => {
-    console.log("parsing html");
+    // console.log("parsing html");
     return new DOMParser().parseFromString(data, "text/html");
   }, []);
+  console.timeEnd("parsing html");
 
   const html = useMemo(() => parseHTML(data ?? ""), [data, parseHTML]);
 
@@ -179,6 +51,7 @@ export function Pane({ title, index }: { title: string; index: number }) {
   );
 
   function closePane() {
+    console.time("closePane");
     setSearchParams((prev) => {
       const wikiPages = prev.get("page")?.split(",");
       if (!wikiPages) {
@@ -192,6 +65,7 @@ export function Pane({ title, index }: { title: string; index: number }) {
       prev.set("page", wikiPages.join(","));
       return prev;
     });
+    console.timeEnd("closePane");
   }
 
   const searchParamsArray = searchParams.get("page")?.split(",") ?? [];
@@ -206,43 +80,23 @@ export function Pane({ title, index }: { title: string; index: number }) {
       }}
     >
       <div className="flex bg-white scrollbar-thin">
-        <div
-          className="group sticky w-10 min-w-10 cursor-vertical-text text-gray-700"
-          style={{ zIndex: index, right: index * 40 }}
-        >
-          <button onClick={closePane} className="p-2">
-            <SquareX className="text-gray-100 transition-colors group-hover:text-gray-400 hover:!text-red-500" />
-          </button>
-          {isPending ? (
-            <>
-              <WikiTitle title={title} />
-            </>
-          ) : null}
-          {isError && <WikiTitle title="Error" />}
-          {isPending || isError ? null : <WikiTitle title={pageTitle} />}
-        </div>
-        <div className="scroll-y h-[calc(100vh-20px)] w-[650px] min-w-[650px] overflow-x-hidden overflow-y-scroll py-3 pr-3 scrollbar-thin">
-          {isPending && (
-            <>
-              <div className="text-2xl font-bold">{title}</div>
-              <Globe className="mx-auto mt-8 w-6 animate-spin" />
-            </>
-          )}
-          {isError && <div>Error</div>}
-          {isPending || isError ? null : (
-            <>
-              <div
-                className="text-2xl font-bold"
-                dangerouslySetInnerHTML={{ __html: pageTitle }}
-              />
-              <WikiPage
-                body={html?.querySelector("body")}
-                searchParams={searchParams}
-                setSearchParams={setSearchParams}
-              />
-            </>
-          )}
-        </div>
+        <WikiSidebar
+          title={title}
+          index={index}
+          closePane={closePane}
+          isPending={isPending}
+          isError={isError}
+          pageTitle={pageTitle}
+        />
+        <WikiContent
+          html={html}
+          isPending={isPending}
+          isError={isError}
+          title={title}
+          searchParams={searchParams}
+          setSearchParams={setSearchParams}
+          pageTitle={pageTitle}
+        />
       </div>
     </div>
   );
