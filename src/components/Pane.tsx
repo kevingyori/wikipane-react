@@ -1,9 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import { SetURLSearchParams, useSearchParams } from "react-router-dom";
-import { Globe, SquareX } from "lucide-react";
-import { WikiTitle } from "./WikiTitle";
-import { WikiPage } from "./WikiPage";
+import {
+  memo,
+  useCallback,
+  useDeferredValue,
+  useMemo,
+  useTransition,
+} from "react";
+import { useSearchParams } from "react-router-dom";
 import { WikiSidebar } from "./WikiSidebar";
 import { WikiContent } from "./WikiContent";
 
@@ -20,11 +23,18 @@ async function fetchPage(title: string) {
   }
 }
 
-export function Pane({ title, index }: { title: string; index: number }) {
+export const Pane = memo(function Pane({
+  title,
+  index,
+}: {
+  title: string;
+  index: number;
+}) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const queryKey = useMemo(() => ["page", title], [title]);
   const fetchPageMemoized = useCallback(() => fetchPage(title), [title]);
+  const [, startTransition] = useTransition();
 
   const { data, isPending, isError } = useQuery({
     queryKey: queryKey,
@@ -36,12 +46,9 @@ export function Pane({ title, index }: { title: string; index: number }) {
     _optimisticResults: "optimistic",
   });
 
-  console.time("parsing html");
   const parseHTML = useCallback((data: string) => {
-    // console.log("parsing html");
     return new DOMParser().parseFromString(data, "text/html");
   }, []);
-  console.timeEnd("parsing html");
 
   const html = useMemo(() => parseHTML(data ?? ""), [data, parseHTML]);
 
@@ -51,32 +58,37 @@ export function Pane({ title, index }: { title: string; index: number }) {
   );
 
   function closePane() {
-    console.time("closePane");
-    setSearchParams((prev) => {
-      const wikiPages = prev.get("page")?.split(",");
-      if (!wikiPages) {
+    startTransition(() => {
+      setSearchParams((prev) => {
+        const wikiPages = prev.get("page")?.split(",");
+        if (!wikiPages) {
+          return prev;
+        }
+        if (wikiPages.length === 1) {
+          prev.delete("page");
+          return prev;
+        }
+        wikiPages.splice(index, 1);
+        prev.set("page", wikiPages.join(","));
         return prev;
-      }
-      if (wikiPages.length === 1) {
-        prev.delete("page");
-        return prev;
-      }
-      wikiPages.splice(index, 1);
-      prev.set("page", wikiPages.join(","));
-      return prev;
+      });
     });
-    console.timeEnd("closePane");
   }
 
   const searchParamsArray = searchParams.get("page")?.split(",") ?? [];
+
+  const left = useDeferredValue(index * 40);
+  const right = useDeferredValue(
+    -650 + (searchParamsArray.length - index - 1) * 40,
+  );
 
   return (
     <div
       className="shadow-xl shadow-gray-300"
       style={{
         position: "sticky",
-        left: index * 40,
-        right: -650 + (searchParamsArray.length - index - 1) * 40,
+        left: left,
+        right: right,
       }}
     >
       <div className="flex bg-white scrollbar-thin">
@@ -93,11 +105,9 @@ export function Pane({ title, index }: { title: string; index: number }) {
           isPending={isPending}
           isError={isError}
           title={title}
-          searchParams={searchParams}
-          setSearchParams={setSearchParams}
           pageTitle={pageTitle}
         />
       </div>
     </div>
   );
-}
+});

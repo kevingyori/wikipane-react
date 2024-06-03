@@ -1,114 +1,153 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import type { SetURLSearchParams } from "react-router-dom";
+import React, { memo, useCallback, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
+import { transformCss } from "../utils/transformCss";
 import "../wikipedia.css";
 
-export function WikiPage({
-  body,
-  searchParams,
-  setSearchParams,
+export const WikiPage = memo(function WikiPage({
+  html,
   pageTitle,
 }: {
-  body: HTMLBodyElement | null;
-  searchParams: URLSearchParams;
-  setSearchParams: SetURLSearchParams;
+  html: Document;
   pageTitle: string;
 }) {
+  const [searchParams, setSearchParams] = useSearchParams();
   const styleLinks = useCallback(
-    (link: HTMLAnchorElement) => {
-      if (
-        searchParams
-          .get("page")
-          ?.split(",")
-          .includes(link.getAttribute("title") as string)
-      ) {
-        link.classList.add("bg-blue-200");
-      } else {
-        link.classList.remove("bg-blue-200");
-      }
+    (linkTitle: string) => {
+      return searchParams.get("page")?.split(",").includes(linkTitle)
+        ? "bg-blue-200"
+        : "";
     },
     [searchParams],
   );
 
-  const addEventListener = useCallback(
-    (e: MouseEvent, link: HTMLAnchorElement) => {
-      // don't add an event listener multiple times
-      if (link.getAttribute("data-event-listener")) {
-        // console.log("event listener already added");
-        return;
-      }
-
-      // add attribute to prevent adding event listener multiple times
-      link.setAttribute("data-event-listener", "true");
-      // console.log("event listener added");
-
-      const title = link.getAttribute("title");
-
+  const handleLinkClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>, title: string | null) => {
       if (title !== null) {
         e.preventDefault();
-        // const index = searchParams.getAll("page").indexOf(title);
-        // if (index < searchParams.getAll("page").length - 1) {
-        //   setSearchParams((prev) => {
-        //     const wikiPages = prev.getAll("page");
-        //     wikiPages.splice(index + 1, wikiPages.length - index - 1);
-        //     prev.delete("page");
-        //     wikiPages.forEach((wikiPage) => {
-        //       prev.append("page", wikiPage);
-        //     });
-        //     return prev;
-        //   });
-        // }
-
         setSearchParams((prev) => {
-          const wikiPages = prev.get("page")?.split(",");
-          if (!wikiPages) {
-            prev.append("page", title);
-            return prev;
+          const wikiPages = prev.get("page")?.split(",") || [];
+          if (!wikiPages.includes(title)) {
+            wikiPages.push(title);
+            prev.set("page", wikiPages.join(","));
           }
-          wikiPages?.push(title);
-          prev.set("page", wikiPages?.join(","));
           return prev;
         });
       }
     },
-    [setSearchParams, searchParams],
+    [setSearchParams],
   );
 
-  const handleBodyRender = useCallback(() => {
-    console.time("handleBodyRender");
-    body?.querySelectorAll("a").forEach((link) => {
-      if (link.getAttribute("rel") !== "mw:WikiLink") {
-        // console.log("link isn't a wiki link", link.getAttribute("rel"));
-        link.addEventListener("click", (e) => {
-          e.preventDefault();
-        });
-        link.removeAttribute("href");
-        return;
+  const voidElements = new Set([
+    "area",
+    "base",
+    "br",
+    "col",
+    "embed",
+    "hr",
+    "img",
+    "input",
+    "link",
+    "meta",
+    "param",
+    "source",
+    "track",
+    "wbr",
+  ]);
+
+  const isWhitespaceTextNode = (node: ChildNode) => {
+    return (
+      node.nodeType === Node.TEXT_NODE && !/\S/.test(node.textContent || "")
+    );
+  };
+
+  const transformNodeToElement = useCallback(
+    (node: ChildNode, index: number): React.ReactNode => {
+      if (isWhitespaceTextNode(node)) {
+        return null;
       }
 
-      styleLinks(link);
-    });
-    console.timeEnd("handleBodyRender");
-    return body?.innerHTML ?? "";
-  }, [body, styleLinks]);
+      if (node.nodeType === Node.TEXT_NODE) {
+        return node.textContent;
+      }
 
-  const renderedBody = useMemo(() => handleBodyRender(), [handleBodyRender]);
+      if (node.nodeType !== Node.ELEMENT_NODE) {
+        return null;
+      }
 
-  const ref = useRef<HTMLDivElement>(null);
+      const element = node as HTMLElement;
+      const tagName = element.tagName.toLowerCase();
+      const children = Array.from(element.childNodes).map((child, idx) =>
+        transformNodeToElement(child, idx),
+      );
 
-  useEffect(() => {
-    console.time("add event listeners");
-    const current = ref.current?.querySelectorAll("a");
-    current?.forEach((link: HTMLAnchorElement) => {
-      link.addEventListener("click", (e) => addEventListener(e, link));
-    });
-    console.timeEnd("add event listeners");
+      if (
+        tagName === "link" ||
+        tagName === "style" ||
+        tagName === "script" ||
+        tagName === "meta"
+      ) {
+        return null;
+      }
 
-    return () => {
-      current?.forEach((link: HTMLAnchorElement) => {
-        link.removeEventListener("click", (e) => addEventListener(e, link));
-      });
-    };
-  }, [addEventListener]);
+      const typeOf = element.getAttribute("typeof") || null;
+      const className = element.getAttribute("class") || null;
+      const style = element.getAttribute("style") || null;
+      const colspan = element.getAttribute("colspan") || null;
+      const src = element.getAttribute("src") || null;
+
+      if (tagName === "a") {
+        const title = element.getAttribute("title");
+        if (element.getAttribute("rel") !== "mw:WikiLink") {
+          return (
+            <Link
+              key={`${tagName}-${index}`}
+              className={"non-wiki-link" + className}
+              title={null}
+              handleLinkClick={(e) => e.preventDefault()}
+            >
+              {children}
+            </Link>
+          );
+        }
+
+        return (
+          <Link
+            key={`${tagName}-${index}`}
+            className={styleLinks(title || "") + " " + className}
+            title={title}
+            handleLinkClick={handleLinkClick}
+          >
+            {" "}
+            {children}{" "}
+          </Link>
+        );
+      }
+
+      const props = {
+        key: `${tagName}-${index}`,
+        src,
+        className,
+        typeOf,
+        style: transformCss(style ?? ""),
+        colspan,
+      };
+
+      if (voidElements.has(tagName)) {
+        return React.createElement(tagName, props);
+      }
+
+      return React.createElement(tagName, props, children);
+    },
+    [handleLinkClick, styleLinks, voidElements],
+  );
+
+  const renderedBody = useMemo(() => {
+    if (!html) return null;
+
+    return Array.from(html.body.childNodes).map((node, index) =>
+      transformNodeToElement(node, index),
+    );
+  }, [html, transformNodeToElement]);
 
   return (
     <>
@@ -116,25 +155,32 @@ export function WikiPage({
         className="text-2xl font-bold"
         dangerouslySetInnerHTML={{ __html: pageTitle }}
       />
-      <RenderedBody renderedBody={renderedBody} ref={ref} />;
+      <div className="fade-in overflow-hidden">{renderedBody}</div>
     </>
   );
-}
+});
 
-function RenderedBody({
-  renderedBody,
-  ref,
+function Link({
+  className,
+  children,
+  title,
+  handleLinkClick,
 }: {
-  renderedBody: string;
-  ref: React.RefObject<HTMLDivElement>;
+  className: string;
+  handleLinkClick: (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    title: string | null,
+  ) => void;
+  children: React.ReactNode;
+  title: string | null;
 }) {
   return (
-    <div
-      ref={ref}
-      className="fade-in overflow-hidden"
-      dangerouslySetInnerHTML={{
-        __html: renderedBody,
-      }}
-    />
+    <a
+      className={className}
+      href="#"
+      onClick={(e) => handleLinkClick(e, title)}
+    >
+      {children}
+    </a>
   );
 }

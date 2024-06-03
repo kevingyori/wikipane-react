@@ -1,4 +1,3 @@
-import { SetURLSearchParams } from "react-router-dom";
 import { WikiPage } from "./WikiPage";
 import { Globe } from "lucide-react";
 
@@ -7,16 +6,12 @@ export function WikiContent({
   isPending,
   isError,
   title,
-  searchParams,
-  setSearchParams,
   pageTitle,
 }: {
   html: Document;
   isPending: boolean;
   isError: boolean;
   title: string;
-  searchParams: URLSearchParams;
-  setSearchParams: SetURLSearchParams;
   pageTitle: string;
 }) {
   return (
@@ -30,12 +25,7 @@ export function WikiContent({
       {isError && <div>Error</div>}
       {isPending || isError ? null : (
         <>
-          <WikiPage
-            body={html?.querySelector("body")}
-            searchParams={searchParams}
-            setSearchParams={setSearchParams}
-            pageTitle={pageTitle}
-          />
+          <WikiPage html={html} pageTitle={pageTitle} />
         </>
       )}
     </div>
