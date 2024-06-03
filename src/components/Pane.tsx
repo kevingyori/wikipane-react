@@ -57,24 +57,6 @@ export const Pane = memo(function Pane({
     [html],
   );
 
-  function closePane() {
-    startTransition(() => {
-      setSearchParams((prev) => {
-        const wikiPages = prev.get("page")?.split(",");
-        if (!wikiPages) {
-          return prev;
-        }
-        if (wikiPages.length === 1) {
-          prev.delete("page");
-          return prev;
-        }
-        wikiPages.splice(index, 1);
-        prev.set("page", wikiPages.join(","));
-        return prev;
-      });
-    });
-  }
-
   const searchParamsArray = searchParams.get("page")?.split(",") ?? [];
 
   const left = useDeferredValue(index * 40);
@@ -95,7 +77,6 @@ export const Pane = memo(function Pane({
         <WikiSidebar
           title={title}
           index={index}
-          closePane={closePane}
           isPending={isPending}
           isError={isError}
           pageTitle={pageTitle}

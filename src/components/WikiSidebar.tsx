@@ -1,21 +1,41 @@
 import { SquareX } from "lucide-react";
 import { WikiTitle } from "./WikiTitle";
+import { startTransition } from "react";
+import { useSearchParams } from "react-router-dom";
 
 export function WikiSidebar({
   title,
   index,
-  closePane,
   isPending,
   isError,
   pageTitle,
 }: {
   title: string;
   index: number;
-  closePane: () => void;
   isPending: boolean;
   isError: boolean;
   pageTitle: string;
 }) {
+  const [, setSearchParams] = useSearchParams();
+
+  function closePane() {
+    startTransition(() => {
+      setSearchParams((prev) => {
+        const wikiPages = prev.get("page")?.split(",");
+        if (!wikiPages) {
+          return prev;
+        }
+        if (wikiPages.length === 1) {
+          prev.delete("page");
+          return prev;
+        }
+        wikiPages.splice(index, 1);
+        prev.set("page", wikiPages.join(","));
+        return prev;
+      });
+    });
+  }
+
   return (
     <div
       className="group sticky w-10 min-w-10 cursor-vertical-text text-gray-700"
