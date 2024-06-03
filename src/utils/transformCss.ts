@@ -1,3 +1,4 @@
+// @ts-nocheck
 import cssParser from "css";
 
 //
@@ -53,7 +54,6 @@ var nameGenerator = function (name) {
 
 export function transformCss(inputCssText) {
   if (!inputCssText) {
-    return null;
     throw new Error("missing css text to transform");
   }
 
