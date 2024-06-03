@@ -54,7 +54,7 @@ var nameGenerator = function (name) {
 
 export function transformCss(inputCssText) {
   if (!inputCssText) {
-    throw new Error("missing css text to transform");
+    return null;
   }
 
   // If the input "css" doesn't wrap it with a css class (raw styles)
