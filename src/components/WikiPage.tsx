@@ -93,7 +93,8 @@ export const WikiPage = memo(function WikiPage({
       const className = element.getAttribute("class") || null;
       const style = element.getAttribute("style") || null;
       const colspan = element.getAttribute("colspan") || null;
-      const src = element.getAttribute("src") || null;
+      const src =
+        tagName === "img" ? element.getAttribute("src") || null : null;
 
       if (tagName === "a") {
         const title = element.getAttribute("title");
