@@ -3,6 +3,27 @@ import { useSearchParams } from "react-router-dom";
 import { transformCss } from "../utils/transformCss";
 import "../wikipedia.css";
 
+const voidElements = new Set([
+  "area",
+  "base",
+  "br",
+  "col",
+  "embed",
+  "hr",
+  "img",
+  "input",
+  "link",
+  "meta",
+  "param",
+  "source",
+  "track",
+  "wbr",
+]);
+
+const isWhitespaceTextNode = (node: ChildNode) => {
+  return node.nodeType === Node.TEXT_NODE && !/\S/.test(node.textContent || "");
+};
+
 export const WikiPage = memo(function WikiPage({
   html,
   pageTitle,
@@ -36,29 +57,6 @@ export const WikiPage = memo(function WikiPage({
     },
     [setSearchParams],
   );
-
-  const voidElements = new Set([
-    "area",
-    "base",
-    "br",
-    "col",
-    "embed",
-    "hr",
-    "img",
-    "input",
-    "link",
-    "meta",
-    "param",
-    "source",
-    "track",
-    "wbr",
-  ]);
-
-  const isWhitespaceTextNode = (node: ChildNode) => {
-    return (
-      node.nodeType === Node.TEXT_NODE && !/\S/.test(node.textContent || "")
-    );
-  };
 
   const transformNodeToElement = useCallback(
     (node: ChildNode, index: number): React.ReactNode => {
@@ -129,7 +127,7 @@ export const WikiPage = memo(function WikiPage({
         src,
         className,
         typeOf,
-        style: transformCss(style ?? ""),
+        style: transformCss(`${style ?? ""}`),
         colspan,
       };
 
