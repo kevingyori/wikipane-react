@@ -1,11 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  memo,
-  useCallback,
-  useDeferredValue,
-  useMemo,
-  useTransition,
-} from "react";
+import { memo, useCallback, useDeferredValue, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { WikiSidebar } from "./WikiSidebar";
 import { WikiContent } from "./WikiContent";
@@ -30,11 +24,10 @@ export const Pane = memo(function Pane({
   title: string;
   index: number;
 }) {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
 
   const queryKey = useMemo(() => ["page", title], [title]);
   const fetchPageMemoized = useCallback(() => fetchPage(title), [title]);
-  const [, startTransition] = useTransition();
 
   const { data, isPending, isError } = useQuery({
     queryKey: queryKey,
