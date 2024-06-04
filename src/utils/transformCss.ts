@@ -65,7 +65,11 @@ export function transformCss(inputCssText) {
     inputCssText = `.bootstrapWithCssClass { ${inputCssText} }`;
   }
 
-  var css = cssParser.parse(inputCssText);
+  try {
+    var css = cssParser.parse(inputCssText);
+  } catch (e) {
+    return null;
+  }
   var result = {};
   transformRules(this, css.stylesheet.rules, result);
 
