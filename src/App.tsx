@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Panes } from "./components/Panes";
+import { PanesProvider } from "./context/PanesContext";
 
 const queryClient = new QueryClient();
 
@@ -14,7 +15,9 @@ const router = createBrowserRouter([
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <PanesProvider>
+        <RouterProvider router={router} />
+      </PanesProvider>
     </QueryClientProvider>
   );
 }
