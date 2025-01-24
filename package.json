@@ -12,20 +12,14 @@
   "dependencies": {
     "@types/react": "npm:types-react@rc",
     "@types/react-dom": "npm:types-react-dom@rc",
-    "@radix-ui/react-popover": "^1.0.7",
-    "@tanstack/react-query": "^5.40.0",
-    "@uidotdev/usehooks": "^2.4.1",
-    "babel-plugin-react-compiler": "0.0.0-experimental-c23de8d-20240515",
-    "cmdk": "^1.0.0",
-    "css": "^3.0.0",
-    "eslint-plugin-react-compiler": "0.0.0-experimental-53bb89e-20240515",
-    "jotai": "^2.8.2",
-    "lucide-react": "^0.383.0",
-    "prettier-plugin-tailwindcss": "^0.6.1",
-    "react": "19.0.0-rc.0",
-    "react-dom": "19.0.0-rc.0",
-    "react-error-boundary": "^4.0.13",
-    "react-router-dom": "^6.23.1",
+    "babel-plugin-react-compiler": "19.0.0-beta-e552027-20250112",
+    "eslint-plugin-react-compiler": "19.0.0-beta-e552027-20250112",
+    "lucide-react": "^0.473.0",
+    "prettier-plugin-tailwindcss": "^0.6.10",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-error-boundary": "^5.0.0",
+    "react-router-dom": "^7.1.2",
     "tailwind-scrollbar": "^3.1.0"
   },
   "overrides": {
@@ -33,17 +27,17 @@
     "@types/react-dom": "npm:types-react-dom@rc"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^7.11.0",
-    "@typescript-eslint/parser": "^7.11.0",
-    "@vitejs/plugin-react": "^4.3.0",
-    "autoprefixer": "^10.4.19",
-    "eslint": "^9.4.0",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.6",
-    "postcss": "^8.4.38",
-    "sass": "^1.77.4",
-    "tailwindcss": "^3.4.3",
-    "typescript": "^5.2.2",
-    "vite": "^5.2.12"
+    "@typescript-eslint/eslint-plugin": "^8.20.0",
+    "@typescript-eslint/parser": "^8.20.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.18.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.18",
+    "postcss": "^8.5.1",
+    "sass": "^1.83.4",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7"
   }
 }
